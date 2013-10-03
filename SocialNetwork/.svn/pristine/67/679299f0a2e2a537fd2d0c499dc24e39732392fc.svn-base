@@ -1,0 +1,37 @@
+package Persistence;
+
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import Dominion.Follows;
+
+public class PruebasDAORRC {
+	public static void main (String[] args) throws SQLException{
+
+		CrudDAO<Follows> c = new FollowsDAO();
+		Follows a = new Follows();
+		a.setFollowed_mail("4@autor.com"); 
+		a.setFollower_mail("3@revisor.com");
+		c.create(a); 
+		
+		LinkedList<Follows> l = new LinkedList<Follows>(); 
+		
+	//	c.create(a);
+		
+	//	a = c.read(a); 
+	//	System.out.println("Done create + read " + a.toString()); 
+		
+	//	a.setIssue("PTAG");
+	//	c.update(a); 
+		
+//		c.update(a); 
+		
+//		a.setState("READ");  
+		l = c.readAll(a); 
+		
+		System.out.println("Done update + read " + l.toString()); 
+		
+		//c.delete(a); 
+		//System.out.print("Deleted"); 
+	}
+}

@@ -1,0 +1,394 @@
+package SocialNetwork.actions;
+
+import java.sql.SQLException;
+import java.util.Map;
+
+import utilidades.leer;
+
+import Dominion.Admin;
+import Dominion.Article;
+import Dominion.ArticleReview;
+import Dominion.Author;
+import Dominion.Publisher;
+import Dominion.Reviewer;
+import Dominion.ReviewerTag;
+import Dominion.User;
+import Persistence.ArticleDAO;
+import Persistence.ArticleReviewDAO;
+import Persistence.AuthorDAO;
+import Persistence.CrudDAO;
+import Persistence.PublisherDAO;
+import Persistence.ReviewerDAO;
+import Persistence.ReviewerTagDAO;
+import Persistence.UserDAO;
+
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+
+public class AdminActions extends ActionSupport{
+	private static final long serialVersionUID = 1L;
+
+	private String userfound="nothing"; 
+	private String userid=" "; 
+	private boolean found=true; 
+	private String newfriend; 
+
+	private String email; 
+	private String name;
+	private String secondname;
+	private String city;
+	private String password; 
+	private String password_confirmation; 
+	private String karma; 
+	private String rol; 
+	private String tag; 
+	private String articleId; 
+	private String articleDel; 
+	private String manual_reviewer; 
+	private String field_id; 
+
+	public String getField_id() {
+		return field_id;
+	}
+	public void setField_id(String field_id) {
+		this.field_id = field_id;
+	}
+	public String getKarma() {
+		return karma;
+	}
+	public void setKarma(String karma) {
+		this.karma = karma;
+	}
+	public String getRol() {
+		return rol;
+	}
+	public void setRol(String rol) {
+		this.rol = rol;
+	}
+	public String getCity() {
+		return city;
+	}
+	public void setCity(String city) {
+		this.city = city;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	public String getPassword_confirmation() {
+		return password_confirmation;
+	}
+	public void setPassword_confirmation(String password_confirmation) {
+		this.password_confirmation = password_confirmation;
+	}
+	public String getName() {
+		return name;
+	}
+
+
+	public String execute(){
+		return "Wololo"; 
+	}
+	public String searchID() {
+		User u = new User();
+		User aux=null;
+		Map<String, Object> session = ActionContext.getContext().getSession();  // Get session
+		try {
+			u = (Admin) session.get("user");
+
+			aux = u.search_userById(this.name);
+
+			if(aux.getName().length() > 0){
+				userfound="["+aux.getEmail() + "] " + aux.getName() + " " + aux.getSecond_name() + " [" + aux.getRol()+"]" ;
+				userid = aux.getEmail();
+				found = true; 
+
+			}
+			else
+				found=false; 
+
+			session.put("userfound", userfound);
+			session.put("userid", userid);
+
+			return SUCCESS; 
+		}
+		catch (Exception e) {
+			session.put("error_message", "Error while searching: check id and try again please");
+			return ERROR;
+		}
+	}
+
+	public String DelUser() {
+		User u = new User(); 
+		User newFriend = new User(); 
+		newFriend.setEmail(newfriend);
+		Map<String, Object> session = ActionContext.getContext().getSession();  // Get session
+		try {
+			newFriend.setEmail(newfriend);			
+			u = (Admin) session.get("user"); 
+			u.deluser(newFriend); 
+			return SUCCESS; 
+		}
+		catch (Exception e) {
+			session.put("error_messager", "Error deleting a user: check user and try again please");
+			return ERROR;
+		}
+	}
+	public String GetUserProfile() {
+		User u = new User(); 
+		User newFriend = new User(); 
+		newFriend.setEmail(newfriend);
+		CrudDAO<User> userdao = new UserDAO(); 
+		
+		Map<String, Object> session = ActionContext.getContext().getSession();  // Get session
+		try {
+			newFriend.setEmail(newfriend);
+			newFriend = userdao.read(newFriend);  			
+			u = (Admin) session.get("user"); 
+			
+			if(newFriend.getRol().equals("A"))
+				newFriend = new Author(newFriend.getEmail());
+			else if (newFriend.getRol().equals("R")){
+				newFriend = new Reviewer(newFriend.getEmail());
+ 
+			}
+			else if (newFriend.getRol().equals("E"))
+				newFriend = new Publisher(newFriend.getEmail()); 
+			
+			
+			session.put("edit_user", newFriend); 
+			return SUCCESS; 
+		}
+		catch (Exception e) {
+			session.put("error_message", "Error getting a user profile: check user and try again please");
+			return ERROR;
+		}
+	}	
+	public String UpdateUserProfile() {
+		User u = new User();
+		Admin me; 
+		User newFriend; 
+
+		Map<String, Object> session = ActionContext.getContext().getSession();  // Get session
+		try {
+			newFriend = (User) session.get("edit_user");  
+			u = (Admin) session.get("user"); 
+			me = new Admin(u.getEmail()); 
+
+			if(!password.equals(password_confirmation)){
+				session.put("error_message", "Password confirmation doesn't match"); 
+				return ERROR; 
+			}
+			else{	
+				if(newFriend.getRol().equals("A")){
+					Author a = new Author(newFriend.getEmail()); 
+					// Setear otra info
+					set_common(a); 
+					a.setKarmaNoAdition(Integer.parseInt(karma)); 
+
+					me.update_author(a); 
+
+				}
+				else if(newFriend.getRol().equals("R")){
+					Reviewer r = new Reviewer(newFriend.getEmail());
+					// Setear otra info	
+					set_common(r); 
+					r.setKarmaNoAdition(Integer.parseInt(karma)); 
+					me.update_reviewer(r); 
+				}
+				else if (newFriend.getRol().equals("E")){
+					Publisher p = new Publisher(newFriend.getEmail());
+					// Setear otra info
+					set_common(p);
+
+					me.update_publisher(p);
+				}
+				else{
+					User generic = new User(newFriend.getEmail()); 
+					me.update_generic(generic);
+				}
+
+			}
+			return SUCCESS; 
+		}
+		catch (Exception e) {
+			session.put("error_message", "Error updating profile: repeat the process again please");
+			return ERROR;
+		}
+	}		
+	
+	public String SearchArticle() {
+		Map<String, Object> session = ActionContext.getContext().getSession();  // Get session
+		try {
+			Article ar = new Article(Integer.parseInt(articleId));
+			
+			if(ar.getId_author() == null)
+				ar=null; 
+			setArticleId(ar.getId()+"");
+			session.put("articlefound", ar); 
+			session.put("article_found", true);
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return ERROR; 
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return ERROR; 
+		} 
+
+		return SUCCESS; 
+	}	
+
+	public String DeleteArticle() {
+		Map<String, Object> session = ActionContext.getContext().getSession();  // Get session
+		try {
+			Article ar = new Article(Integer.parseInt(articleDel));
+			CrudDAO<Article> ardao = new ArticleDAO(); 
+			ardao.delete(ar); 
+			session.remove("articlefound"); 
+			session.remove("article_found");
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return ERROR; 
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return ERROR; 
+		} 
+
+		return SUCCESS; 
+	}
+	public String ManualSchedule() {
+		Map<String, Object> session = ActionContext.getContext().getSession();  // Get session
+		Admin ad = (Admin) session.get("user"); 
+		try{
+			ad.manual_Schedule(field_id, manual_reviewer); 
+		
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+	
+
+		return SUCCESS; 
+	}	
+	
+	public String CreateUser() {
+		Map<String, Object> session = ActionContext.getContext().getSession();  // Get session
+		if(!password.equals(password_confirmation)){
+			session.put("error_message", "Password error: retype the same password please");
+			return ERROR; 
+		}
+		else{
+
+			User newFriend = new User(); 
+			newFriend.setEmail(email);
+			newFriend.setRol(rol); 
+			newFriend.setPassword(password);
+			try {
+				if(newFriend.getRol().equals("A")){
+					CrudDAO<Author> userdao = new AuthorDAO();
+					Author a = new Author(newFriend);
+					a.setKarmaNoAdition(0); 
+					a.setRol(rol);
+					userdao.create(a); 
+				}
+				else if (newFriend.getRol().equals("E")){
+					CrudDAO<Publisher> userdao = new PublisherDAO(); 
+					Publisher a = new Publisher(newFriend); 
+					a.setRol(rol);
+					userdao.create(a); 
+				}
+				else if (newFriend.getRol().equals("R")){
+					CrudDAO<Reviewer> userdao = new ReviewerDAO(); 
+					Reviewer a = new Reviewer(newFriend); 
+					a.setRol(rol);
+					userdao.create(a); 
+					CrudDAO<ReviewerTag> rtdao = new ReviewerTagDAO(); 
+					ReviewerTag rt = new ReviewerTag(newFriend.getEmail(), Integer.parseInt(tag)); 
+					rtdao.create(rt);
+				}
+				else{
+					CrudDAO<User> userdao = new UserDAO(); 
+					userdao.create(newFriend);
+				}
+					
+				return SUCCESS; 
+			}
+			catch (Exception e) {
+				session.put("error_message", "Error creating a user: repeat the process again please");
+				return ERROR;
+			}
+		}
+	}
+	private void set_common(User u) {
+
+		u.setCity(city); 
+		u.setName(name);
+		if(password.length()>0)
+			u.setPassword(password); 
+		//u.setRol(rol);
+		u.setSecond_name(secondname);
+
+
+	}
+	public void setName(String name){
+		this.name=name; 
+	}
+	public String getUserfound(){
+		return this.userfound; 
+	}
+	public String getUserid(){
+		return this.userid; 
+	}
+	public boolean getFound(){
+		return this.found;
+	}
+	public String getNewfriend() {
+		return newfriend;
+	}
+	public void setNewfriend(String newfriend) {
+		this.newfriend = newfriend;
+	}
+	public String getSecondname() {
+		return secondname;
+	}
+	public void setSecondname(String secondname) {
+		this.secondname = secondname;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	public String getTag() {
+		return tag;
+	}
+	public void setTag(String tag) {
+		this.tag = tag;
+	}
+	public String getArticleId() {
+		return articleId;
+	}
+	public void setArticleId(String articleId) {
+		this.articleId = articleId;
+	}
+	public String getArticleDel() {
+		return articleDel;
+	}
+	public void setArticleDel(String articleDel) {
+		this.articleDel = articleDel;
+	}
+	public String getManual_reviewer() {
+		return manual_reviewer;
+	}
+	public void setManual_reviewer(String manual_reviewer) {
+		this.manual_reviewer = manual_reviewer;
+	}
+
+}

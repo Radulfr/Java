@@ -1,0 +1,90 @@
+package Persistence;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import Dominion.*;
+
+public class NotificationDAO extends CrudDAO<Notification>{
+
+    @Override
+    public void create(Notification notificacion) {
+        String sqlQuerry = "INSERT INTO Notification (mail_notified, note, state, notification_date) VALUES ('"
+        		+notificacion.getMail_notified()+"','"+notificacion.getNote()+"','"+notificacion.getState()+"','"
+        		+notificacion.getDate()+"')";
+        try {
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    }
+
+    @Override
+    public void delete(Notification notificacion) {
+    	 try {
+ 			AgenteBD.getDbCon().queryUpdate("DELETE FROM Notification WHERE idNotification='"+notificacion.getId()+"'");
+ 		} catch (SQLException e) {
+ 			e.printStackTrace();
+ 		}
+    }
+
+    @Override
+    public Notification read(Notification notificacion) throws SQLException {
+      ResultSet rs = AgenteBD.getDbCon().query(
+                "SELECT * FROM Notification WHERE idNotification=" + notificacion.getId()+ "");
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                    notificacion.setMail_notified(rs.getString("mail_notified"));
+                    notificacion.setNote(rs.getString("note"));
+                    notificacion.setState(rs.getString("state"));
+					notificacion.setDate(rs.getString("notification_date"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        return notificacion;
+    }
+
+    @Override
+    public void update(Notification notificacion) {
+    	 String sqlQuerry="UPDATE Notification SET mail_notified='"+notificacion.getMail_notified()
+		         +"', note='" + notificacion.getNote()
+		         +"', state='" +notificacion.getState()
+		         +"', notification_date='"+notificacion.getDate()
+		         + "' WHERE idNotification='" + notificacion.getId()+ "'";
+		try {
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}       
+    }
+
+	@Override
+	public LinkedList<Notification> readAll(Notification notificacion) throws SQLException{
+		String consult="SELECT * FROM Notification WHERE mail_notified='" + notificacion.getMail_notified()+ "'";
+		if (notificacion.getState()!=null) consult= "SELECT * FROM Notification WHERE mail_notified='" + notificacion.getMail_notified()+ "' AND state='"+notificacion.getState()+"'";
+		ResultSet rs = AgenteBD.getDbCon().query(consult);
+		LinkedList<Notification> listArtRev = new LinkedList<Notification>();
+	    if (rs != null) {
+	        try {
+	            while (rs.next()) {
+	            	Notification n = new Notification();
+	                n.setId(rs.getInt("idNotification"));
+	                n.setMail_notified(rs.getString("mail_notified"));
+	                n.setNote(rs.getString("note"));
+                    n.setState(rs.getString("state"));
+					n.setDate(rs.getString("notification_date"));
+	                listArtRev.add(n);
+	            }
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        }
+	    }
+	    rs.close();
+	    return listArtRev;
+	}
+}

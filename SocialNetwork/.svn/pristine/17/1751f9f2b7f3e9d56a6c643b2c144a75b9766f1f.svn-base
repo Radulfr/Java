@@ -1,0 +1,466 @@
+package Dominion;
+
+import utilidades.leer;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+public class NoPersistence {
+
+	/**
+	 * @param args
+	 * @throws Exception
+	 * @author Buggin' & Debuggin' 
+	 */
+	public static void main(String[] args) throws Exception {
+		
+
+		
+		User u = new User(); 
+		Author a = null; 
+		Publisher p = null; 
+		Reviewer rev = null; 
+		
+		System.out.println("==================================");
+		System.out.println("  Social Network Authors/Edithors   ");
+		System.out.println("==================================\n");
+		String email = leer.cadena("Email:"); 
+		String password = leer.cadena("Password:");
+		System.out.println("Please wait...");
+		u = u.log(email, password);
+		
+		if(u!=null){
+			System.out.println("Wellcome\n" +u.toString());
+			/*
+			 * Evaluamos el rol:
+			 * Hay que hacerlo forzosamente aquï¿½, 
+			 * en la clase usuario no se puede al ser Superclase
+			 * de las otras
+			 * 
+			 * En función del rol, se carga una interfaz u otra
+			 */
+			if(u.getRol().equals("A")){
+				a = new Author(u);
+				author_interface(a); 
+			}
+			else if (u.getRol().equals("R")){
+				rev = new Reviewer(u);
+				reviewer_interface(rev);
+			}
+			else if (u.getRol().equals("E")){
+				p = new Publisher(u); 
+				publisher_interface(p); 
+			}
+		}
+		else{
+			System.out.println("Incorrect Log"); 
+		}
+		
+
+/*		
+		while(sesion){
+
+			show_user_menu(); 
+			
+			opt = leer.entero(); 
+			switch(opt){
+			case 0:
+				sesion=false;
+				break; 
+			case 1: 
+
+				String name = leer.cadena ("Nuevo nombre:"); 
+				String secondname = leer.cadena("Nuevo apellido:"); 
+				String date = leer.cadena("Nueva fecha (aaaa-mm-dd):");
+				String city = leer.cadena("Nueva ciudad:");
+				String pass = leer.cadena("Nuevo password:"); 
+			
+				// Objeto actualizado
+				User update = new User(u.getEmail(), pass, name, secondname, city, date);
+				// Se pasa al usuario
+				u.edit_profile(update);
+			break;
+			case 2: u.view_contacts(); 
+			break;
+			case 3:
+				// Se recogen los datos del mensaje
+				String to = leer.cadena("Destinatario (email):");
+				String body = leer.cadena("Escriba su mensaje:"); 
+				// La fecha habrá que formatearla automáticamente desde el sistema, por ahora esto nos vale
+				String date_msg = leer.cadena("Fecha (aaaa-mm-dd):"); 
+				Message m = new Message("", to, body, date_msg); 
+				// El usuario lo envía
+				u.write_message(m);
+			break;
+			case 4: u.add_contact();
+			break;
+			case 5: 
+				
+				String title = leer.cadena("Titulo:");
+				String publishing_date=leer.cadena("Fecha (aaaa-mm-dd):");
+				String id_author= a.getEmail();
+				String comment_author=leer.cadena("Comentario:");
+				String state="Creado";
+				int mark=-1;
+				Article art= new Article(title,publishing_date,id_author,comment_author,state,mark);
+				
+				a.send_publication(art);
+			break;
+			
+			case 6:
+				rev.get_reviews();
+			break;
+			case 7:
+				rev=new Reviewer(u);
+				Article ar=new Article();
+				ar.setId(1);
+				rev.asses_publication(ar, 6);
+			break;
+			case 8:
+				Article ar2=new Article();
+				ar2.setId(1);
+				rev.leave_comment(ar2,"laura");
+			break;
+			}
+				
+		}
+
+*/
+	}
+	
+	
+private static void publisher_interface(Publisher p) throws Exception {
+	boolean sesion = true; 
+	while (sesion){
+		// Dibujamos su menú personal
+		show_user_menu();
+		show_publisher_menu();
+		show_others_common(); 
+		manage_notifications(p); //Mostramos las notificaciones
+		int opc = leer.entero("Select an option:"); 
+		if (0 <= opc && opc <= 6){
+			sesion = user_switch((User)p, opc); 
+		}
+		// Son opciones propias del rol
+		else{
+			publisher_switch(p, opc);
+		}
+	}
+			
+}
+
+
+private static boolean publisher_switch(Publisher p, int opc) throws Exception {
+	// TODO Auto-generated method stub
+switch(opc){
+	
+	case 7:// Add reviewer to list
+		p.add_reviewer(leer.cadena("Email:"));
+		break;
+		
+	case 8:// Delete reviewer from list
+		p.delete_reviewer(leer.cadena("Email")); 
+		break;
+		
+	case 9:// Get review from reviewer
+		
+		break; 
+		
+	case 10: // Search for reviewer
+		// Por EMAIL y TAG
+		break; 
+	}
+	return false;
+}
+
+
+private static void reviewer_interface(Reviewer rev) throws Exception {
+	boolean sesion = true; 
+	int opc = 0; 
+	while (sesion){
+		// Dibujamos su menú personal
+		show_user_menu();
+		show_reviewer_menu();
+		show_others_common(); 
+		manage_notifications(rev); //Mostramos las notificaciones
+		//---------------------------Opciones según el rol ------------
+		// Si el valor va de 0 a 5, son opciones comunes de usuario
+		opc = leer.entero("Select an option:"); 
+		if (0 <= opc && opc <= 6){
+			sesion = user_switch((User)rev, opc); 
+		}
+		// Son opciones propias del rol
+		else{
+			reviewer_switch(rev, opc);
+		}
+	}
+		
+	}
+
+
+private static void reviewer_switch(Reviewer rev, int opc) throws Exception {
+	switch(opc){
+	
+	case 7:// Consult unresolved publications
+		LinkedList<ArticleReview> l = rev.get_unresolved_reviews();
+		// Mostramos la lista
+		System.out.println(l.toString());
+		break;
+		
+	case 8:// Assess publications
+		Article ar=new Article();
+		ar.setId(1);
+		rev.asses_publication(ar, leer.entero("Mark:"));
+		break;
+		
+	case 9:// Get reviewed publications
+		LinkedList<ArticleReview> l2 = rev.get_resolved_reviews(); 
+		// Mostramos la lista
+		System.out.println(l2.toString()); 
+		
+		break; 
+		
+	case 10://Leave a comment in assessted publications
+		Article ar2=new Article();
+		ar2.setId(1);
+		rev.leave_comment(ar2,"laura");
+		break; 
+
+	}
+}
+
+
+private static void author_interface(Author a) throws Exception {
+	boolean sesion = true; 
+	while (sesion){
+		// Dibujamos su menú personal
+		show_user_menu();
+		show_author_menu();
+		show_others_common(); 
+		manage_notifications(a); //Mostramos las notificaciones
+		int opc = leer.entero("Select an option:"); 
+		if (0 <= opc && opc <= 6){
+			sesion = user_switch((User)a, opc); 
+		}
+		// Son opciones propias del rol
+		else{
+			author_switch(a, opc);
+		}
+	}
+		
+}
+private static void manage_notifications(User u) throws SQLException{
+	//TODO añadir la invocacion a este metodo para todos los usuarios
+	//LinkedList<Notification> notify_list = u.get_notifications();
+	//System.out.println("Notifications:\n " +  notify_list.toString());
+	System.out.println("------------------------------------------------------");
+	//u.update_notifications(notify_list);
+}
+
+
+private static boolean author_switch(Author a, int opc) throws Exception {
+	// TODO Auto-generated method stub
+switch(opc){
+	
+	case 7:// Send publication
+		String title = leer.cadena("Titulo:");
+		String publishing_date=leer.fecha();
+		String id_author= a.getEmail();
+		String comment_author=leer.cadena("Comentario:");
+		String body=leer.cadena("Texto:");
+		String state="Creado";
+		int mark=-1;
+		Article art= new Article(title,publishing_date,id_author,comment_author,state,mark,body);
+		int vip=leer.entero("0: Normal send\n1: Ask for VIP Review");
+		a.send_publication(art,vip);
+		
+		break;
+		
+	case 8: // Get publications
+		LinkedList<Article> l = a.get_publications();
+		System.out.println(l.toString()); 
+		
+		
+		break; 
+	case 9:// Cancel a review
+	//	a.cancel_review(leer.cadena("Article ID:")); 
+		
+		
+		break; 
+	case 10: // Leave a comment in publication
+	//	a.leave_comment(leer.cadena("Article ID:"), leer.cadena("Comment:"));
+		break;
+	}
+	return false;
+}
+
+
+private static boolean user_switch(User u, int opt) throws Exception{
+	boolean sesion = true; 
+	switch(opt){
+	case 0:
+		// Salir
+		sesion=false;
+		System.out.println("Bye!"); 
+		break; 
+	case 1: 
+		/*
+		 * Entre clases sólo viajan objetos 
+		 */
+		// Modificar datos
+		String name = leer.cadena ("New name:"); 
+		String secondname = leer.cadena("New second name:"); 
+		String date = leer.cadena("New birthdate (aaaa-mm-dd):");
+		String city = leer.cadena("New city:");
+		String pass = leer.cadena("New password:"); 
+	
+		// Objeto actualizado
+		User update = new User(u.getEmail(), pass, name, secondname, city, date);
+		// Se pasa al usuario
+		u.edit_profile(update);
+	break;
+	// Ver contactos
+	case 2: u.view_contacts(); 
+	break;
+	case 3:
+		// Enviar mensaje
+		// Se recogen los datos del mensaje
+		String to = leer.cadena("To (email):");
+		String body = leer.cadena("Write your message:"); 
+		// La fecha habrá que formatearla automáticamente desde el sistema, por ahora esto nos vale
+		String date_msg = leer.fecha(); 
+		Message m = new Message(u.getEmail(), to, body, date_msg); 
+		// El usuario lo envía
+		u.write_message(m);
+	break;
+	// Añadir contacto (por email)
+	case 4: 
+		// Primero buscamos, bien por ID o por TAG
+		User nuser = null; 
+		int search_user = leer.entero("Search by:\n (1) Email\n (2) TAG");
+		if (search_user == 1){
+			// buscar usuario por email
+	//		nuser = u.search_user(leer.cadena("Put Email:"));
+			if (nuser != null) // si hay usuario, se añade
+				u.add_contact(nuser); 
+			else{
+				System.out.println("User doesn't exist"); 
+			}
+		}
+		else if (search_user == 2){
+			// Buscar por tag
+			LinkedList<String> users = new LinkedList<String>(); 
+	//		users = u.search_tag(leer.cadena("Put TAG:"));
+			System.out.println(users.toString()); 
+		}
+	break;
+	case 5: 
+		int search_user_2 = leer.entero("Search by:\n (1) Email\n (2) TAG");
+		if (search_user_2 == 1){
+			// buscar usuario por email
+			search_email(u); 
+		}
+		else if (search_user_2 == 2){
+			// Buscar por tag
+			search_tag(u); 
+		}
+		
+	break;
+	case 6:
+		// Read my messages
+		LinkedList<Message> msgs; 
+		msgs = u.get_Messages();
+		while(!msgs.isEmpty()){
+			System.out.println(msgs.poll().toString()); // Recupera el primer mensaje de la lista y lo imprime
+		}
+		
+	break;
+		
+	}
+	return sesion; 
+	
+}
+private static User search_email(User u) throws Exception{
+	// APOYO AL PROGRAMA: busca usuarios por EMAIL
+//	User nuser = u.search_user(leer.cadena("Put Email:"));
+//	if (nuser != null) // si hay usuario, se imprime
+		//System.out.println("Find:\n--------\n"+nuser.toString()); 
+//	else{
+		System.out.println("User doesn't exist"); 
+//	}
+	return null; 	
+//	return nuser; 
+}
+private static LinkedList<String> search_tag (User u) throws Exception{
+	// APOYO AL PROGRAMA: busca usuarios por TAG
+	LinkedList<String> users = new LinkedList<String>(); 
+//	users = u.search_tag(leer.cadena("Put TAG:"));
+	System.out.println(users.toString()); 
+	return users; 
+}
+private static void show_user_menu() {
+	
+	/*
+	 * Se muestran aquí todas las opciones comunes
+	 */
+	System.out.println("==== User's Menu ====");
+	System.out.println("=====================\n");
+	System.out.println("(1) Edit profile");
+	System.out.println("(2) View contacts");
+	System.out.println("(3) Write a message");
+	System.out.println("(4) Add a contact");
+	System.out.println("(5) Search for contacts");
+	System.out.println("(6) View my messages");
+}	
+private static void show_author_menu(){
+	// Starts in 6 (User menu + Author menu)
+	System.out.println("===== Author =====");
+	System.out.println("(7) Send publication");
+	System.out.println("(8) Get publications");
+	System.out.println("(9) Cancel a review");
+	System.out.println("(10)Leave a comment in publication");
+}
+private static void show_reviewer_menu(){
+	// Starts in 6 (User menu + Reviewer menu)
+	System.out.println("===== Reviewer =====");
+	System.out.println("(7) Consult unresolved publications");
+	System.out.println("(8) Assess publication");
+	System.out.println("(9) Get reviewed publications");
+	System.out.println("(10) Leave a comment in an assessted publication");
+}
+private static void show_publisher_menu(){
+	// Starts in 6 (User menu + Publisher menu)
+	System.out.println("===== Publisher =====");
+	System.out.println("(7) Add reviewer");
+	System.out.println("(8) Delete reviewer");
+	System.out.println("(8) Get review from reviewer");
+	System.out.println("(10) Search for reviewer");
+}
+private static void show_others_common(){
+	System.out.println("(0) Exit"); 
+}
+
+
+
+
+protected static void showQuery(ResultSet rs) throws SQLException {
+	/*
+	 * Muestra la consulta tal cual, atributo por atributo
+	 * Requiere resultset
+	 */
+		int columns = rs.getMetaData().getColumnCount();
+		System.out.println("------------------------\n");
+
+		while (rs.next()) {
+			for (int i = 1; i <= columns; i++) {
+				System.out.println(rs.getString(i));
+			}
+			System.out.println();
+		}
+		rs.close();
+
+		System.out.println("------------------------");
+		System.out.flush();
+		}
+}

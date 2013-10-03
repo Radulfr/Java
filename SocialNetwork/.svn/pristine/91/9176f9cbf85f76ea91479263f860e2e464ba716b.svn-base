@@ -1,0 +1,293 @@
+package SocialNetwork.actions;
+
+import java.util.Map;
+
+import Dominion.Admin;
+import Dominion.Author;
+import Dominion.Publisher;
+import Dominion.Reviewer;
+import Dominion.ReviewerTag;
+import Dominion.User;
+import Persistence.AuthorDAO;
+import Persistence.CrudDAO;
+import Persistence.PublisherDAO;
+import Persistence.ReviewerDAO;
+import Persistence.ReviewerTagDAO;
+import Persistence.UserDAO;
+
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+
+public class AdminActions extends ActionSupport{
+	private static final long serialVersionUID = 1L;
+
+	private String userfound="nothing"; 
+	private String userid=" "; 
+	private boolean found=true; 
+	private String newfriend; 
+
+	private String email; 
+	private String name;
+	private String secondname;
+	private String city;
+	private String password; 
+	private String password_confirmation; 
+	private String karma; 
+	private String rol; 
+	private String tag; 
+
+	public String getKarma() {
+		return karma;
+	}
+	public void setKarma(String karma) {
+		this.karma = karma;
+	}
+	public String getRol() {
+		return rol;
+	}
+	public void setRol(String rol) {
+		this.rol = rol;
+	}
+	public String getCity() {
+		return city;
+	}
+	public void setCity(String city) {
+		this.city = city;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	public String getPassword_confirmation() {
+		return password_confirmation;
+	}
+	public void setPassword_confirmation(String password_confirmation) {
+		this.password_confirmation = password_confirmation;
+	}
+	public String getName() {
+		return name;
+	}
+
+
+	public String execute(){
+		return "Wololo"; 
+	}
+	public String searchID() {
+		User u = new User();
+		User aux=null; 
+		try {
+			Map<String, Object> session = ActionContext.getContext().getSession();  // Get session
+			u = (User) session.get("user");
+
+			aux = u.search_userById(this.name);
+
+
+			if(aux!=null){
+				userfound="["+aux.getEmail() + "] " + aux.getName() + " " + aux.getSecond_name() + " [" + aux.getRol()+"]" ;
+				userid = aux.getEmail();
+
+			}
+			else
+				found=false; 
+
+			session.put("userfound", userfound);
+			session.put("userid", userid);
+
+			return SUCCESS; 
+		}
+		catch (Exception e) {
+			return ERROR;
+		}
+	}
+
+	public String DelUser() {
+		User u = new User(); 
+		User newFriend = new User(); 
+		newFriend.setEmail(newfriend);
+
+		try {
+			newFriend.setEmail(newfriend);
+			Map<String, Object> session = ActionContext.getContext().getSession();  // Get session			
+			u = (Admin) session.get("user"); 
+			u.deluser(newFriend); 
+			return SUCCESS; 
+		}
+		catch (Exception e) {
+			return ERROR;
+		}
+	}
+	public String GetUserProfile() {
+		User u = new User(); 
+		User newFriend = new User(); 
+		newFriend.setEmail(newfriend);
+		CrudDAO<User> userdao = new UserDAO(); 
+
+		try {
+			newFriend.setEmail(newfriend);
+			newFriend = userdao.read(newFriend);  
+			Map<String, Object> session = ActionContext.getContext().getSession();  // Get session			
+			u = (Admin) session.get("user"); 
+			
+			if(newFriend.getRol().equals("A"))
+				newFriend = new Author(newFriend.getEmail());
+			else if (newFriend.getRol().equals("R")){
+				newFriend = new Reviewer(newFriend.getEmail());
+ 
+			}
+			else if (newFriend.getRol().equals("E"))
+				newFriend = new Publisher(newFriend.getEmail()); 
+			
+			
+			session.put("edit_user", newFriend); 
+			return SUCCESS; 
+		}
+		catch (Exception e) {
+			return ERROR;
+		}
+	}	
+	public String UpdateUserProfile() {
+		User u = new User();
+		Admin me; 
+		User newFriend; 
+
+
+		try {
+
+			Map<String, Object> session = ActionContext.getContext().getSession();  // Get session
+			newFriend = (User) session.get("edit_user");  
+			u = (Admin) session.get("user"); 
+			me = new Admin(u.getEmail()); 
+
+			if(!password.equals(password_confirmation)){
+				session.put("error_message", "Password confirmation doesn't match"); 
+				return ERROR; 
+			}
+			else{	
+				if(newFriend.getRol().equals("A")){
+					Author a = new Author(newFriend.getEmail()); 
+					// Setear otra info
+					set_common(a); 
+					a.setKarmaNoAdition(Integer.parseInt(karma)); 
+
+					me.update_author(a); 
+
+				}
+				else if(newFriend.getRol().equals("R")){
+					Reviewer r = new Reviewer(newFriend.getEmail());
+					// Setear otra info	
+					set_common(r); 
+					r.setKarmaNoAdition(Integer.parseInt(karma)); 
+					me.update_reviewer(r); 
+				}
+				else if (newFriend.getRol().equals("E")){
+					Publisher p = new Publisher(newFriend.getEmail());
+					// Setear otra info
+					set_common(p);
+
+					me.update_publisher(p);
+				}
+				else{
+					User generic = new User(newFriend.getEmail()); 
+					me.update_generic(generic);
+				}
+
+			}
+			return SUCCESS; 
+		}
+		catch (Exception e) {
+			return ERROR;
+		}
+	}		
+	public String CreateUser() {
+		
+		if(!password.equals(password_confirmation))
+			return ERROR; 
+
+		else{
+
+			User newFriend = new User(); 
+			newFriend.setEmail(email);
+			newFriend.setRol(rol); 
+			newFriend.setPassword(password);
+			try {
+				if(newFriend.getRol().equals("A")){
+					CrudDAO<Author> userdao = new AuthorDAO();
+					Author a = new Author(newFriend); 
+					userdao.create(a); 
+				}
+				else if (newFriend.getRol().equals("E")){
+					CrudDAO<Publisher> userdao = new PublisherDAO(); 
+					Publisher a = new Publisher(newFriend); 
+					userdao.create(a); 
+				}
+				else if (newFriend.getRol().equals("R")){
+					CrudDAO<Reviewer> userdao = new ReviewerDAO(); 
+					Reviewer a = new Reviewer(newFriend); 
+					userdao.create(a); 
+					CrudDAO<ReviewerTag> rtdao = new ReviewerTagDAO(); 
+					ReviewerTag rt = new ReviewerTag(newFriend.getEmail(), Integer.parseInt(tag)); 
+					rtdao.create(rt);
+				}
+				else{
+					CrudDAO<User> userdao = new UserDAO(); 
+					userdao.create(newFriend);
+				}
+					
+				return SUCCESS; 
+			}
+			catch (Exception e) {
+				return ERROR;
+			}
+		}
+	}
+	private void set_common(User u) {
+
+		u.setCity(city); 
+		u.setName(name);
+		if(password.length()>0)
+			u.setPassword(password); 
+		//u.setRol(rol);
+		u.setSecond_name(secondname);
+
+
+	}
+	public void setName(String name){
+		this.name=name; 
+	}
+	public String getUserfound(){
+		return this.userfound; 
+	}
+	public String getUserid(){
+		return this.userid; 
+	}
+	public boolean getFound(){
+		return this.found;
+	}
+	public String getNewfriend() {
+		return newfriend;
+	}
+	public void setNewfriend(String newfriend) {
+		this.newfriend = newfriend;
+	}
+	public String getSecondname() {
+		return secondname;
+	}
+	public void setSecondname(String secondname) {
+		this.secondname = secondname;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	public String getTag() {
+		return tag;
+	}
+	public void setTag(String tag) {
+		this.tag = tag;
+	}
+
+}

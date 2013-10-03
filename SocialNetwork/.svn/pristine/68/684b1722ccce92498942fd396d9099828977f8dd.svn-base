@@ -1,0 +1,92 @@
+package test_package;
+
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import junit.framework.Assert;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import Dominion.Article;
+import Dominion.Author;
+import Dominion.User;
+import Persistence.Agent;
+
+public class TestAuthor {
+	
+	private Author au;
+	private Article ar;
+	
+    @BeforeClass  
+    public static void setUpClass() throws Exception {
+    	System.out.println("Ejecutando TestAuthor...");
+    	try{
+    		Agent ag = Agent.getDbCon();
+    		String sql_1 = "INSERT INTO User (email, name, second_name, birth_date, city, pass, rol) " +
+    				"VALUES ('johnDoe@autor.com', 'Aut1', 'num1', '1985-09-09', 'La Solana', 'autor1', 'A')";
+    		ag.insert(sql_1);
+    		String sql_2 = "INSERT INTO Author (email, karma) values ('johnDoe@autor.com', '7')";
+    		ag.insert(sql_2);
+    	}catch(Exception e){
+    		Assert.fail(e.toString());
+    	}
+    }  
+      
+    @AfterClass  
+    public static void tearDownClass() throws Exception {  
+    	try{
+    		Agent ag = Agent.getDbCon();
+    		String sql_1 = "DELETE FROM User WHERE email='johnDoe@autor.com'";
+    		ag.insert(sql_1);
+    	}catch(Exception e){
+    		Assert.fail(e.toString());
+    	}
+    	System.out.println("Fin TestAuthor");
+    }  
+      
+    @Before  
+    public void setUp() {
+    	User u = new User();
+       	u.setEmail("johnDoe@autor.com");
+       	this.au = new Author(u);
+       	this.ar = new Article("Test title", "2012-10-10", this.au.getEmail(), "Test comement", "", -1,"Ejemplo");
+    }
+      
+    @After  
+    public void tearDown(){
+    	// No Use
+    }  
+      
+    @Test  
+    public void sendPublication(){
+    	System.out.println("\tTest sendPublication...");
+		try {
+			LinkedList<Article> preList;
+			preList = au.get_publications();
+			Assert.assertEquals(0, preList.size());
+			au.send_publication(ar, 0);
+			LinkedList<Article> postList = au.get_publications();
+			Assert.assertEquals(1, postList.size());
+		} catch (Exception e) {
+			Assert.fail(e.toString());
+		}
+    }
+    
+    @Test  
+    public void cancelPublication() throws SQLException {
+    	System.out.println("\tTest cancelPublication...");
+    	try{
+	    	LinkedList<Article> preList = au.get_publications();
+	    	au.cancel_review(String.valueOf(preList.getFirst().getId()));
+	    	Article car = new Article(preList.getFirst().getId());
+	    	Assert.assertEquals("Cancelled", car.getState());
+    	}catch(Exception e){
+    		Assert.fail(e.toString());
+    	}
+    }
+    
+}

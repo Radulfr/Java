@@ -1,0 +1,130 @@
+package Persistence;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import Dominion.*;
+
+public class ReviewerDAO extends CrudDAO<Reviewer>{
+
+    @Override
+    public void create(Reviewer revisor) {
+        String sqlQuerry = "INSERT INTO Reviewer (email, karma, VIP) VALUES ('"
+        		+revisor.getEmail()+"','"+revisor.getKarma()+"','"+revisor.getVIP()+"')";
+        String sqlQuerry2 = "INSERT INTO User (email, name, second_name, birth_date, city, pass, rol) VALUES ('"
+        		+revisor.getEmail()+"','"+revisor.getName()+"','"+revisor.getSecond_name()+"','"
+        		+revisor.getBirth_date()+"','"+revisor.getCity()+"','"
+        		+revisor.getPassword()+"','R')";
+        try {
+        	AgenteBD.getDbCon().queryUpdate(sqlQuerry2);
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    }
+
+    @Override
+    public void delete(Reviewer revisor) {
+    	 try {
+ 			AgenteBD.getDbCon().queryUpdate("DELETE FROM Reviewer WHERE email='"+revisor.getEmail()+"'");
+ 			AgenteBD.getDbCon().queryUpdate("DELETE FROM User WHERE email='"+revisor.getEmail()+"'");
+ 		} catch (SQLException e) {
+ 			e.printStackTrace();
+ 		}
+    }
+
+    @Override
+    public Reviewer read(Reviewer revisor) throws SQLException {
+      ResultSet rs = AgenteBD.getDbCon().query(
+                "SELECT * FROM Reviewer WHERE email='" + revisor.getEmail()+ "'");
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                    revisor.setKarma(rs.getInt("karma"));
+                    revisor.setVIP(rs.getInt("VIP"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        ResultSet rs2 = AgenteBD.getDbCon().query("SELECT * FROM User WHERE email='" + revisor.getEmail()+"'");
+        if (rs2 != null) {
+            try {
+                while (rs2.next()) {
+                    revisor.setName(rs2.getString("name"));
+                    revisor.setSecond_name(rs2.getString("second_name"));
+                    revisor.setBirth_date(rs2.getString("birth_date"));
+                    revisor.setCity(rs2.getString("city"));
+                    revisor.setPassword(rs2.getString("pass"));
+					revisor.setRol(rs2.getString("rol"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs2.close();
+        return revisor;
+    }
+
+    @Override
+    public void update(Reviewer revisor) {
+    	 String sqlQuerry="UPDATE Reviewer SET karma='"+revisor.getKarma()
+		         +"', VIP='" + revisor.getVIP()
+		         + "' WHERE email='" + revisor.getEmail()+ "'";
+    	 String sqlQuerry2="UPDATE User SET name='"+revisor.getName()
+		         +"', second_name='" + revisor.getSecond_name()
+		         +"', birth_date='" +revisor.getBirth_date()
+		         +"', city='"+revisor.getCity()
+		         +"', pass='"+ revisor.getPassword()
+		         +"', rol='"+revisor.getRol()
+		         + "' WHERE email='" + revisor.getEmail()+ "'";
+		try {
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry2);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}       
+    }
+
+	@Override
+	public LinkedList<Reviewer> readAll(Reviewer obj) throws SQLException {
+		ResultSet rs = AgenteBD.getDbCon().query("SELECT * FROM Reviewer");
+    	LinkedList<Reviewer> listRev = new LinkedList<Reviewer>();
+    	String consult;
+    	ResultSet rs2;
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                	Reviewer a = new Reviewer();
+                    a.setEmail(rs.getString("email"));
+                    a.setKarma(rs.getInt("karma"));
+                    a.setVIP(rs.getInt("VIP"));
+                    consult =  "SELECT * FROM User WHERE email='" + a.getEmail()+"'";
+                    rs2 = AgenteBD.getDbCon().query(consult);
+                    if (rs2 != null) {
+                        try {
+                            while (rs2.next()) {
+                                a.setName(rs2.getString("name"));
+                                a.setSecond_name(rs2.getString("second_name"));
+                                a.setBirth_date(rs2.getString("birth_date"));
+                                a.setCity(rs2.getString("city"));
+                                a.setPassword(rs2.getString("pass"));
+            					a.setRol(rs2.getString("rol"));
+                            }
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    rs2.close();
+					listRev.add(a);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        return listRev;
+	}
+}

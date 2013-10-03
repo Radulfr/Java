@@ -1,0 +1,35 @@
+package Persistence;
+
+import java.sql.*;
+
+public class Conexion {
+	private Connection bd;
+	private int id;
+
+	public Conexion(int id) throws SQLException {
+		
+		String url = "jdbc:mysql://localhost/";
+		String dbName = "ISOII";
+//		String driver = "com.mysql.jdbc.Driver";
+		String userName = "root";
+		String password = "";
+
+		this.id=id;
+		this.bd=DriverManager.getConnection(url + dbName, userName, password);
+	}
+	
+	public void close() throws SQLException {
+		synchronized (this) {
+			Broker.get().libera(this);
+		}
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public PreparedStatement prepareStatement(String sql) throws SQLException {
+		return this.bd.prepareStatement(sql);
+	}
+
+}

@@ -1,0 +1,301 @@
+package Dominion;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import utilidades.leer;
+
+import Persistence.Agent;
+import Persistence.AgentFactory;
+
+import java.util.*; 
+
+public class User {
+	
+	protected String email;
+	protected String name;
+	protected String second_name;
+	protected String city;
+	protected String birth_date;
+	protected String password;
+	protected String rol; 
+	
+	
+	public User(String email, String password, String name, String sname, String city, String bdate){
+		this.email=email;
+		this.name=name;
+		this.second_name=sname;
+		this.city=city;
+		this.birth_date=bdate;
+		this.password=password;
+	}
+	public User(){
+		
+	}
+	
+	
+	// SETS
+	
+	public void setEmail(String m){
+		email=m;
+	}
+	
+	public void setName(String n){
+		name = n;
+	}
+	
+	public void setSecondName(String sn){
+		second_name=sn; 
+	}
+	
+	public void setCity(String c){
+		city = c;
+	}
+	
+	public void setBirthDate(String bd){
+		birth_date=bd;
+	}
+	
+	public void setPassword(String p){
+		password=p;
+	}
+	public void setRol(String r){
+		rol=r; 
+	}
+	
+	
+	// GETS
+	
+	public String getEmail(){
+		return email;
+	}
+	
+	public String getName(){
+		return name; 
+	}
+	
+	public String getSecondName(){
+		return second_name;
+	}
+
+	public String getCity(){
+		return city;
+	}
+	
+	public String getBirthDate(){
+		return birth_date;
+	}
+	
+	public String getPassword(){
+		return password;
+	}
+	public String getRol(){
+		return rol; 
+	}
+	
+	
+	
+	
+	public String toString(){
+		String s= getEmail()+" "+getName()+" "+getSecondName()+"\n"; 
+		return s;
+	}
+	
+	public void create_user_author() throws SQLException{
+		Agent ag = Agent.getDbCon();
+		ag.createNewUserAuthor(this);
+	}
+	
+	public void edit_profile(User u) throws Exception{
+		/*
+		 * Primero: se recogen los datos
+		 * Segundo: se actualiza el objeto
+		 * Tercero: se inserta en la base de datos a través del agente 
+		 */
+		this.setBirthDate(u.getBirthDate());
+		this.setCity(u.getCity());
+		this.setName(u.getName());
+		this.setPassword(u.getPassword()); 
+		this.setSecondName(u.getSecondName());
+		
+		/*
+		 * por ahora el email no se puede actualizar
+		 */
+		
+		AgentFactory ag = Agent.getDbCon();
+		if (ag.update_user(this)==1){
+			// Todo correcto 
+			System.out.println("Datos actualizados");
+		}
+		else
+			System.out.println("Ha ocurrido un error"); 
+	}
+	public LinkedList<String> view_contacts() throws SQLException{
+		/*
+		 * Se invoca al agente y se solicita la consulta
+		 * pasando el propio objeto
+		 * DEVOLVERA: una lista dinámica de contactos
+		 * NOTA: por ahora sólo devolvera a quiénes sigue
+		 * no a sus followers
+		 */
+		ResultSet r = null; 
+		LinkedList<String> l = new LinkedList<String>(); 
+		
+		AgentFactory ag = Agent.getDbCon();
+		
+		r=ag.get_contacts(this); 
+		
+		// Cargamos la lista con el resultado
+		while(r.next()){
+			l.add(r.getString("followed_mail")); 
+		}
+		
+		// Mostramos la lista
+		System.out.println(l.toString());
+		
+		return l;
+		
+	}
+	public void write_message(Message m) throws SQLException{
+		/*
+		 * Seteamos el origen del mensaje y lo pasamos
+		 * al agente
+		 */
+		Notification message_notification = new Notification(m.getEmail_to(), "New message from " + m.getEmail_from() +" ","UNREAD", m.getDate() ); 
+		
+		m.setEmail_from(getEmail());  
+		AgentFactory ag = Agent.getDbCon(); 
+		
+		if (ag.send_message(m)==1){
+			System.out.println("Enviado:\n"+m.toString());
+			message_notification.send(); 
+		}
+		else
+			System.out.println("Algo salió mal"); 
+		
+	}
+	public void add_contact(User u) throws SQLException{
+		AgentFactory ag = Agent.getDbCon();
+		
+		Notification follower_notification = new Notification(u.getEmail(), "New follower: " + this.getEmail() +" ","UNREAD", leer.fecha() ); 
+		if (ag.add_contact(this,u)==1){
+			System.out.println("Contacto añadido");
+			follower_notification.send(); 
+		}
+		else
+			System.out.println("Algo salió mal"); 
+	}
+
+	public User log(String email, String password) throws Exception{
+
+		/* Ojo al dato:
+		 * Se instancia el agente y después, se hace la consulta
+		 * No vale hacer directamente Agent.log(email, password)
+		 * pediría que log() fuese un método estático, lo que 
+		 * sería harto incorrecto y derivaría a malfuncionamiento
+		 */
+		//TODO
+		AgentFactory ag = Agent.getDbCon();
+		ResultSet r = ag.log(email, password);
+		User u = null;
+		
+		/* ResultSet.absolute(n) se posiciona en tupla n-éisma
+		 * ResultSet.absolute(1) se posiciona en tupla 1 (parecido a ResultSet.next()
+		 * ResultSet.aboslute(1) devuelve null si no hay tupla (caso de que la consulta no devuelva nada) 
+		 */
+		if (r.absolute(1)){ // Loggeo efectivo, creamos el objeto
+			 /*
+			  * Siempre que se hace una consulta, se mueve el resultset una posición (r.next()) para
+			  * actualizar el puntero	
+			  */
+			// Seteamos el objeto			
+			setEmail(r.getString("email"));
+			setName(r.getString("name")); 
+			setSecondName(r.getString("second_name")); 
+			setCity(r.getString("city")); 
+			setPassword(r.getString("pass")); 
+			setBirthDate(r.getDate("birth_date").toString()); 
+			setRol(r.getString("rol")); 
+		
+			
+			 u = this; // El objeto se devuelve a sí mismo
+		}
+		else{// Mensaje de error
+			u = null;
+		}
+		
+		return u; 
+	}
+	public User search_user(String e_mail) throws SQLException {
+		// Busca usuario por email
+		User nuser = null; 
+		ResultSet r = null; 
+		AgentFactory ag = Agent.getDbCon();
+		r = ag.search_user(e_mail);
+		if (r.next() != false){ 
+			nuser = new User(r.getString("email"), "****", r.getString("name"), r.getString("second_name"),
+					r.getString("city"),r.getString("birth_date"));
+						
+		}
+		else{
+			//System.out.println("No existe usuario");
+		}
+		return nuser;
+	}
+	public LinkedList<String> search_tag(String tag) throws SQLException {
+		// Devolvemos una lista de IDs para no saturar el sistema con consultas
+		// Pero lo suyo sería devolver una lista de Users
+		LinkedList<String> users = new LinkedList<String>();
+		ResultSet r = null; 
+		AgentFactory ag = Agent.getDbCon();
+		
+		r = ag.search_tag(tag); 
+		
+		while (r.next()){
+			users.add(r.getString("reviewer_mail")); 
+		}
+		return users;
+	}
+	public LinkedList<Notification> get_notifications() throws SQLException{
+		LinkedList<Notification> notify_list = new LinkedList<Notification>(); 
+		Notification n_aux; 
+		ResultSet r = null; 
+		AgentFactory ag = Agent.getDbCon();
+		r = ag.get_notifications(this);
+		while(r.next()){
+			n_aux = new Notification(r.getString("mail_notified"), r.getString("note"), r.getString("state"), r.getString("notification_date"));
+			notify_list.add(n_aux); 
+		}
+		return notify_list; 
+	}
+	public void update_notifications(LinkedList<Notification> notify_list) throws SQLException{
+		// Una vez se obtienen, cambiar el estado de las notificaciones
+		AgentFactory ag = Agent.getDbCon();
+		while(!notify_list.isEmpty()){
+			/*Actualizamos el estado del objeto*/
+			notify_list.getFirst().setState("READ");
+			/*Pasamos el objeto al agente*/
+			ag.update_notification(notify_list.poll(), this);
+		}
+		
+	}
+	public LinkedList<Message> get_Messages() throws SQLException{
+		LinkedList<Message> message_list = new LinkedList<Message>(); 
+		Message m_aux; 
+		ResultSet r = null; 
+		AgentFactory ag = Agent.getDbCon();
+		r = ag.get_user_messages(this);
+		while(r.next()){
+			m_aux = new Message(r.getString("mail_from"), r.getString("mail_to"), r.getString("body"), r.getString("send_date"));
+			message_list.add(m_aux); 
+		}
+		return message_list; 
+	}
+		
+ 
+	
+}
+
+
+
+

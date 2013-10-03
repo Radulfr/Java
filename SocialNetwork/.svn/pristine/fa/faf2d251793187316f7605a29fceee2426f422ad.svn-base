@@ -1,0 +1,140 @@
+package Dominion;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import Persistence.Agent;
+import Persistence.AgentFactory;
+
+public class Author extends User {
+	
+	protected int karma;
+
+	public Author(String email, String password, String name, String sname, String city, String bdate) {
+		super(email, password, name, sname, city, bdate);
+		Agent ag = Agent.getDbCon();
+		try {
+			this.karma = ag.getKarmaOfAuthor(email);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+	}
+	
+	public Author(User u){
+		super(u.getEmail(),u.getPassword(),u.getName(),u.getSecondName(),u.getCity(),u.getBirthDate());
+		Agent ag = Agent.getDbCon();
+		try {
+			this.karma = ag.getKarmaOfAuthor(u.getEmail());
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public Author(){
+		
+	}
+
+	//SETS
+	
+	public void setKarma(int k){
+		karma=k;
+	}
+	
+	
+	//GETS
+	
+	public int getKarma(){
+		return karma;
+	}
+		
+	
+	
+	
+	public Article send_publication(Article art,int VIP) throws SQLException{
+		/*
+		* send: el autor acaba de enviarlo para su revisión
+		* semireviewed: uno de los revisores ya ha acabado
+		* reviewed: los dos revisores han acabado de revisarlo
+		* sendVIP: el autor acaba de enviarlo para su revisión - vip
+		* semiVIP: uno de los revisores vip ya ha acabado
+		* reviewedVIP: se ha acabado la revisión VIP
+		*/
+		
+		ResultSet r; 
+		AgentFactory ag = Agent.getDbCon();
+		if (VIP==1) art.setState("sentVIP");
+		else art.setState("sent");
+		if (ag.send_publication(art)==1)
+			System.out.println("Enviado:\n"+art.toString()); 
+		else
+			System.out.println("Algo salió mal");
+		r = ag.getArticleID(art); 
+		r.next(); 
+		art.setId(r.getInt("idArticle"));
+		return art; 
+		
+	}
+	public void set_articleTag(Article art,String tag) throws SQLException{
+		/*Asigna un TAG a un artículo*/
+		AgentFactory ag = Agent.getDbCon();
+		int t= ag.getTagId(tag); 
+		ag.set_articleTag(art.getId(), t); 
+	}	
+	
+	public LinkedList<Article> get_publications()throws SQLException{
+		ResultSet r = null;
+		// Devolvemos una lista de IDs
+		AgentFactory ag = Agent.getDbCon();
+		LinkedList<Article> l=new LinkedList<Article>();
+		r= ag.get_publicationsAuthor(this);
+		
+		// Cargamos la lista con el resultado
+		while(r.next()){
+			Article artrev = new Article (r.getInt("idArticle"),r.getString("title"),r.getString("publishing_date"), r.getString("idAuthor"), r.getString("commentAuthor"), r.getString("state"), r.getInt("mark"), r.getString("body"));
+			l.add(artrev); 
+		}
+		return l;
+		
+	}
+	
+	
+	public void cancel_review(String idArticle)throws SQLException{
+		AgentFactory ag = Agent.getDbCon();
+		if (ag.CancelReview(idArticle)==2){
+			System.out.println("Borrado"); 
+		}
+		else{
+			System.out.println("Algo salió mal"); 
+		}
+	}
+	
+	public void leave_comment(String idArticle, String comment)throws SQLException{
+		AgentFactory ag = Agent.getDbCon();
+		if (ag.setCommentInArticle(idArticle, comment)==1){
+			System.out.println("Comentario guardado"); 
+		}
+		else{
+			System.out.println("Algo salió mal"); 
+		}	
+	}
+
+	public Article getArticle(String articleid) throws SQLException {
+		Article art = new Article(); 
+		AgentFactory ag = Agent.getDbCon(); 
+		ResultSet r = ag.get_article(articleid, this);
+
+		while(r.next()){
+			art.setId(r.getInt("idArticle")); 
+			art.setTitle(r.getString("title"));
+			art.setPublishing_date(r.getString("publishing_date"));
+			art.setId_author(r.getString("idAuthor"));
+			art.setComment_author(r.getString("commentAuthor"));
+			art.setState(r.getString("state"));
+			art.setMark();
+		}
+
+		return art;
+	}
+}

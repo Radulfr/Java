@@ -1,0 +1,20 @@
+package OldPersistence;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import Dominion.Article;
+import Dominion.Author;
+
+public interface AuthorDAO {
+	public int send_publication(Article art) throws SQLException;
+	public ResultSet getArticleID(Article art);
+	public int getTagId(String tag);
+	public void set_articleTag(int id, int tag);
+	public ResultSet get_publicationsAuthor(Author a) throws SQLException;
+	public int CancelReview(String id) throws SQLException;
+	public int setCommentInArticle(String id, String comment) throws SQLException;
+	public ResultSet get_articles_with_state(String state) throws SQLException;
+	public ResultSet get_article(String id, Author a) throws SQLException;
+	public int addKarmaAuthor(String author_mail, int karma) throws SQLException;
+}

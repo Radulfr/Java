@@ -1,0 +1,10 @@
+package OldPersistence;
+
+import java.sql.SQLException;
+
+import Dominion.Notification;
+
+public interface NotificationDAO {
+	public int add_notification(Notification n) throws SQLException;
+
+}

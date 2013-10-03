@@ -1,0 +1,44 @@
+package SocialNetwork.actions;
+
+import java.util.*;
+import Dominion.User;
+
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+
+public class Updateprofile extends ActionSupport{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private String name;
+	private String secondname;
+	private String city;
+	
+	public String execute() {
+		User u = new User(); 
+		try {
+			Map<String, Object> session = ActionContext.getContext().getSession();  // Get session			
+			u = (User) session.get("user");
+			u.setName(this.name); 
+			u.setSecondName(this.secondname);
+			u.setCity(this.city);
+			u.edit_profile(u);
+
+			return SUCCESS; 
+		}
+		catch (Exception e) {
+			return ERROR;
+		}
+	}
+
+	public void setName(String name){
+		this.name=name;
+	}
+	public void setSecondname(String secondname){
+		this.secondname=secondname;
+	}
+	public void setCity(String city){
+		this.city = city;
+	}
+}

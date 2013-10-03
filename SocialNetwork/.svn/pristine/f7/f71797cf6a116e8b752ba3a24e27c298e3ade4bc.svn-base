@@ -1,0 +1,179 @@
+package Dominion;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import Persistence.Agent;
+import Persistence.AgentFactory;
+
+public class Article {
+
+	private int id;
+	private String title;
+	private String publishing_date;
+	private String id_author;
+	private String comment_author;
+	private String state;
+	private int mark;
+	private String body;
+
+	
+	public Article(String title, String publishing_date, String id_author,
+			String comment_author, String state, int mark, String body) {
+		this.title = title;
+		this.publishing_date = publishing_date;
+		this.id_author = id_author;
+		this.comment_author = comment_author;
+		this.state = state;
+		this.mark = mark;
+		this.body=body;
+	}
+	
+	public Article(int id_article, String title, String publishing_date, String id_author,
+			String comment_author, String state, int mark, String body) {
+		this.id = id_article;
+		this.title = title;
+		this.publishing_date = publishing_date;
+		this.id_author = id_author;
+		this.comment_author = comment_author;
+		this.state = state;
+		this.mark = mark;
+		this.body=body;
+	}
+	
+	public Article(int idArt) throws SQLException{
+		AgentFactory age = Agent.getDbCon();
+		ResultSet r = age.get_article_by_id(idArt);
+		r.next();
+		this.id = idArt;
+		this.title = r.getString("title");
+		this.publishing_date = r.getString("publishing_date");
+		this.id_author = r.getString("idAuthor");
+		this.comment_author = r.getString("commentAuthor");
+		this.state = r.getString("state");
+		this.mark = r.getInt("mark");
+		this.body = r.getString("body");
+	}
+	
+	public Article(){
+		
+	}
+
+	
+	public int getId() {
+		return id;
+	}
+	
+	public void setId(int i){
+		id=i;
+	}
+	
+	public String getTitle() {
+		return title;
+	}
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	public String getPublishing_date() {
+		return publishing_date;
+	}
+	public void setPublishing_date(String publishing_date) {
+		this.publishing_date = publishing_date;
+	}
+	public String getId_author() {
+		return id_author;
+	}
+	public void setId_author(String id_author) {
+		this.id_author = id_author;
+	}
+	public String getComment_author() {
+		return comment_author;
+	}
+	public void setComment_author(String comment_author) {
+		this.comment_author = comment_author;
+	}
+	public String getState() {
+		return state;
+	}
+	public void setState(String state) {
+		this.state = state;
+	}
+	public int getMark() {
+		return mark;
+	}
+	
+	public void setMark() throws SQLException {
+		Agent ag = Agent.getDbCon();
+		this.mark = ag.setAvMarkOfPublication(this.id);
+	}
+	public String getBody() {
+		return body;
+	}
+	public void setBody(String body) {
+		this.body = body;
+	}
+	
+	
+	/**
+	 * @author roske
+	 * @desc Finds all articles not reviewed (state=Creado)
+	 * @return LinkedList<Article>
+	 * @throws SQLException
+	 */
+	public LinkedList<Article> getArticlesNotReviewed() throws SQLException{
+		AgentFactory age = Agent.getDbCon();
+		ResultSet r = age.get_articles_with_state("sent");
+		LinkedList<Article> l = new LinkedList<Article>();
+		while(r.next()){
+			Article a = new Article(
+					r.getInt("idArticle"),
+					r.getString("title"),
+					r.getString("publishing_date"),
+					r.getString("idAuthor"),
+					r.getString("commentAuthor"),
+					r.getString("state"),
+					r.getInt("mark"),
+					r.getString("body"));
+			l.add(a);
+		}
+		return l;
+	}
+	
+	/**
+	 * @author roske
+	 * @desc Finds all articles
+	 * @return LinkedList<Article>
+	 * @throws SQLException
+	 */
+	public LinkedList<Article> getAllArticles() throws SQLException{
+		AgentFactory age = Agent.getDbCon();
+		ResultSet r = age.get_articles_with_state("");
+		LinkedList<Article> l = new LinkedList<Article>();
+		while(r.next()){
+			Article a = new Article(
+					r.getInt("idArticle"),
+					r.getString("title"),
+					r.getString("publishing_date"),
+					r.getString("idAuthor"),
+					r.getString("commentAuthor"),
+					r.getString("state"),
+					r.getInt("mark"),
+					r.getString("body"));
+			l.add(a);
+		}
+		return l;
+	}
+	
+
+	
+	
+	@Override
+	public String toString() {
+		return "Article [idArticle=" + id + ", title=" + title + ", publishing_date="
+				+ publishing_date + ", id_author=" + id_author
+				+ ", comment_author=" + comment_author + ", state=" + state
+				+ ", mark=" + mark + ", body= "+ body + "]\n";
+	}
+		
+}

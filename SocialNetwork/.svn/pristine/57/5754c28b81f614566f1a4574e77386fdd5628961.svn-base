@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+	"-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+	"http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+	<package name="default" namespace="/" extends="struts-default"> 
+		<action name="Login" class="SocialNetwork.actions.Login">
+			<result name="A">Author.jsp</result>
+			<result name="R">Reviewer.jsp</result>
+			<result name="E">Publisher.jsp</result>
+			<result name="ADMIN">Admin.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+		<action name="amigos" class="SocialNetwork.actions.Amigos">
+			<result name="success">Friends.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+
+		<action name="mensajes2" class="SocialNetwork.actions.Mensajes">
+			<result name="success">Messages.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+		
+		<action name="escribir" class="SocialNetwork.actions.Escribe">
+			<result name="success">Messages.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>	
+		
+		<action name="buscarusu" class="SocialNetwork.actions.Buscar">
+			<result name="success">Friends.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>	
+
+		<action name="addfriend" class="SocialNetwork.actions.Addfriend">
+			<result name="success">Friends.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>	
+		
+		<action name="updateprofile" class="SocialNetwork.actions.Updateprofile">
+			<result name="success">Myprofile.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>			
+		
+		<action name="buscarusutag" class="SocialNetwork.actions.Searchtag">
+			<result name="success">Friends.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+	
+		<action name="getreviewers" class="SocialNetwork.actions.Getreviewers">
+			<result name="success">Publisher.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+		
+		<action name="getrevision" class="SocialNetwork.actions.Getrevision">
+			<result name="success">Publisher.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+		<action name="delreviewer" class="SocialNetwork.actions.DeleteReviewer">
+			<result name="success">Publisher.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>		
+
+		<action name="addreviewer" class="SocialNetwork.actions.PubliAddRev">
+			<result name="success">Publisher.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+		<action name="publisearchid" class="SocialNetwork.actions.PubliSearchID">
+			<result name="success">Publisher.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>		
+		<action name="publisearchtag" class="SocialNetwork.actions.Searchtag">
+			<result name="success">Publisher.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>	
+		<action name="getpublications" class="SocialNetwork.actions.GetPublications">
+			<result name="success">Author.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+		
+		<action name="articledetails" class="SocialNetwork.actions.PublicationDetails">
+			<result name="success">Publication.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>					
+		
+		<action name="sendpublications" class="SocialNetwork.actions.SendPublications">
+			<result name="success">Author.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>	
+		<action name="leavecomment" class="SocialNetwork.actions.PublicationDetails" method="comment">
+			<result name="success">Author.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+		<action name="cancelreview" class="SocialNetwork.actions.PublicationDetails" method="cancel">
+			<result name="success">Author.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+		
+		<action name="showUnresolved" class="SocialNetwork.actions.ShowUnresolvedPublications">
+			<result name="success">Reviewer.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+					
+		<action name="showResolved" class="SocialNetwork.actions.ShowResolvedPublications">
+			<result name="success">Reviewer.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+		
+		<action name="assesPublication" class="SocialNetwork.actions.AssesPublication">
+			<result name="success">Reviewer.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+		
+		<action name="commentPublication" class="SocialNetwork.actions.CommentPublication" >
+			<result name="success">Reviewer.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+		
+		<action name="articleDetailsUnRes" class="SocialNetwork.actions.ShowArticleDetails" method="UnRes">
+			<result name="success">ArticleDetails.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+		<action name="articleDetailsRes" class="SocialNetwork.actions.ShowArticleDetails" method="Res">
+			<result name="success">ArticleDetails.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+		
+		<action name="register" class="SocialNetwork.actions.Register" >
+			<result name="success">Author.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+		
+		<action name="upload" class="SocialNetwork.actions.UploadAction">
+    		<result name="success">exito.jsp</result>
+    		<result name="error">error.jsp</result>
+		</action>
+		<action name="download" class="SocialNetwork.actions.DownloadAction">
+			<result name="success" type="stream">
+			  <param name="contentType">application/pdf</param>
+			  <param name="inputName">fileInputStream</param>
+			  <param name="bufferSize">10240</param>
+			</result>
+			<result name="error">error.jsp</result>
+		</action>
+		<action name="logout" class="SocialNetwork.actions.Logout">
+    		<result name="success">index.jsp</result>
+    		<result name="error">error.jsp</result>
+		</action>
+		<action name="Adminbuscarusu" class="SocialNetwork.actions.AdminActions" method="searchID">
+			<result name="success">Admin.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+			<action name="AdminDelUser" class="SocialNetwork.actions.AdminActions" method="DelUser">
+			<result name="success">Admin.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+			<action name="AdminGetUserProfile" class="SocialNetwork.actions.AdminActions" method="GetUserProfile">
+			<result name="success">EditUser.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+		<action name="Adminupdateprofile" class="SocialNetwork.actions.AdminActions" method="UpdateUserProfile">
+			<result name="success">Admin.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+		<action name="AdminCreateUser" class="SocialNetwork.actions.AdminActions" method="CreateUser">
+			<result name="success">Admin.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+		<action name="AdminSearchArticle" class="SocialNetwork.actions.AdminActions" method="SearchArticle">
+			<result name="success">Admin.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>	
+		<action name="AdminDeleteArticle" class="SocialNetwork.actions.AdminActions" method="DeleteArticle">
+			<result name="success">Admin.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>		
+		<action name="AdminManualSchedule" class="SocialNetwork.actions.AdminActions" method="ManualSchedule">
+			<result name="success">Admin.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>		
+		<action name="AdminAddTag" class="SocialNetwork.actions.AdminActions" method="addTag">
+			<result name="success">Admin.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>			
+		<action name="gotoEvaluation" class="SocialNetwork.actions.SetEvaluation" >
+			<result name="success">PutMarks.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>	
+		<action name="evaluateArticle" class="SocialNetwork.actions.AssesPublication" >
+			<result name="success">Reviewer.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>	
+		<action name="FriendInfo" class="SocialNetwork.actions.FriendInfo" >
+			<result name="success">FriendInfo.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+	</package>
+</struts>
+

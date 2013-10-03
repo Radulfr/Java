@@ -1,0 +1,16 @@
+package OldPersistence;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import Dominion.Article;
+import Dominion.Reviewer;
+
+public interface ReviewerDAO {
+	public ResultSet get_unresolved_publications(Reviewer r) throws SQLException;
+	public ResultSet get_resolved_publications(Reviewer r) throws SQLException;
+	public int asses_articlereview(Article a, String newstate, Reviewer r, int mark_rev)throws SQLException;
+	public int set_comment_reviewer(Reviewer r, int idArt,String comment) throws SQLException;
+	public int addKarmaReviewer(String reviewer_mail) throws SQLException;
+	public int getVIPOfReviewer(String idReviewer) throws SQLException;
+}

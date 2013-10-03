@@ -1,0 +1,118 @@
+package Dominion;
+
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import Persistence.ArticleDAO;
+import Persistence.ArticleReviewDAO;
+import Persistence.ArticleTagDAO;
+import Persistence.AuthorDAO;
+import Persistence.CrudDAO;
+import Persistence.TagDAO;
+
+public class Author extends User {
+	
+	protected int karma;
+
+	
+	public Author(String email, String password, String name, String sname, String city, String bdate, int karma){
+		super(email, password, name, sname, city, bdate);
+		this.karma=karma;
+
+	}
+	
+	public Author(User u) throws SQLException{
+		super(u.getEmail());
+		CrudDAO<Author> c = new AuthorDAO();
+		Author a=c.read(this);
+		this.karma=a.getKarma();
+	}
+	
+	public Author(String email) throws SQLException{
+		super(email);
+		CrudDAO<Author> c = new AuthorDAO();
+		Author a=c.read(this);
+		this.karma=a.getKarma();
+	}
+	
+	public Author(){
+		super();
+	}
+
+	public void setKarma(int k){
+		karma=karma+k;
+	}
+	public int getKarma(){
+		return karma;
+	}
+		
+	
+	
+	
+	public Article send_publication(Article art,int VIP) throws SQLException{
+		/*
+		* send: el autor acaba de enviarlo para su revisión
+		* semireviewed: uno de los revisores ya ha acabado
+		* reviewed: los dos revisores han acabado de revisarlo
+		* cancelled: se ha cancelado la revision
+		*/
+		art.setState("sent");
+		CrudDAO<Article> c = new ArticleDAO();
+		c.create(art);
+		art=c.read(art); //para recuperar el id
+
+		return art; 
+		
+	}
+	public void set_articleTag(Article art,String tag) throws SQLException{
+		/*Asigna un TAG a un artículo*/
+		Tag t = new Tag();
+		t.setIssue(tag);
+		CrudDAO<Tag> c = new TagDAO();
+		t=c.read(t);
+		
+		ArticleTag at = new ArticleTag(art.getId(), t.getIdTag());
+		CrudDAO<ArticleTag> c2 = new ArticleTagDAO();
+		c2.create(at);
+	}	
+	
+	public LinkedList<Article> get_publications()throws SQLException{
+		CrudDAO<Article> c = new ArticleDAO();
+		Article art= new Article();
+		art.setId_author(this.email);
+		LinkedList<Article> l=c.readAll(art);
+		return l;
+		
+	}
+	
+	
+	public void cancel_review(int idArticle)throws SQLException{
+		
+		CrudDAO<Article> c = new ArticleDAO();
+		Article art = new Article(idArticle);
+		art.setState("cancelled");
+		c.update(art);
+		
+		CrudDAO<ArticleReview> c2= new ArticleReviewDAO();
+		ArticleReview artrev = new ArticleReview();
+		artrev.setIdArticle(art.getId());
+		LinkedList<ArticleReview> l =c2.readAll(artrev);
+		for (int i=0; i<l.size();i++){
+			l.get(i).setState_review("cancelled");
+			c2.update(l.get(i));
+		}
+	}
+	
+	public void leave_comment(int idArticle, String comment)throws SQLException{
+		CrudDAO<Article> c = new ArticleDAO();
+		Article art = new Article(idArticle);
+		art.setComment_author(comment);
+		c.update(art);
+	}
+	
+	@Override
+	public String toString(){
+		String s= getEmail()+": "+name+" "+second_name+", City: "+city+", Birth date:"+birth_date+", Rol:"+rol+", Password: "+password+", Karma: "+karma+"\n";
+		return s;
+	}
+}

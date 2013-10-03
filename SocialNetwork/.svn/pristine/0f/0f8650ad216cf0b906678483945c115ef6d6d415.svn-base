@@ -1,0 +1,41 @@
+package Persistence;
+
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import utilidades.leer;
+import Dominion.Article;
+import Dominion.Message;
+import Dominion.Notification;
+
+public class PruebasDAORRC {
+	public static void main (String[] args) throws SQLException{
+
+		CrudDAO<Notification> c = new NotificationDAO();
+		Notification a = new Notification();
+		a.setDate(leer.fecha());
+		a.setMail_notified("1@autor.com"); 
+		a.setNote("HOLA"); 
+		a.setState("UNREAD"); 
+		
+		LinkedList<Notification> l = new LinkedList<Notification>(); 
+		
+		c.create(a);
+		
+	//	a = c.read(a); 
+	//	System.out.println("Done create + read " + a.toString()); 
+		
+
+		
+
+		c.update(a); 
+		
+		a.setState("READ");  
+		l = c.readAll(a); 
+		
+		System.out.println("Done update + read " + l.toString()); 
+		
+		//c.delete(a); 
+		//System.out.print("Deleted"); 
+	}
+}

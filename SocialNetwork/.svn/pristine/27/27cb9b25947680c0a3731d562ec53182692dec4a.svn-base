@@ -1,0 +1,117 @@
+package test_package;
+
+import java.sql.ResultSet;
+import java.util.LinkedList;
+
+import junit.framework.Assert;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import Dominion.Article;
+import Dominion.Author;
+import Dominion.Sistema;
+import Dominion.User;
+import Persistence.Agent;
+
+public class TestSistema {
+	
+	private Author au;
+	private Article ar;
+	
+    @BeforeClass  
+    public static void setUpClass() throws Exception {
+    	System.out.println("Ejecutando TestSistema...");
+    	try{
+    		Agent ag = Agent.getDbCon();
+    		String sql_1 = "INSERT INTO User (email, name, second_name, birth_date, city, pass, rol) " +
+    				"VALUES ('johnDoe@autor.com', 'Aut1', 'num1', '1985-09-09', 'La Solana', 'autor1', 'A')";
+    		ag.insert(sql_1);
+    		String sql_2 = "INSERT INTO Author (email, karma) values ('johnDoe@autor.com', '7')";
+    		ag.insert(sql_2);
+    		String sql_3 = "INSERT INTO User (email, name, second_name, birth_date, city, pass, rol) " +
+    				"VALUES ('johnSmith@revisor.com', 'Revi3', 'num3', '1985-03-03', 'La Solana', 'revisor3', 'R')";
+    		ag.insert(sql_3);
+    		String sql_4 = "INSERT INTO Reviewer (email, karma,VIP) values ('johnSmith@revisor.com', '5','0')";
+    		ag.insert(sql_4);
+    		String sql_5 = "INSERT INTO User (email, name, second_name, birth_date, city, pass, rol) " +
+    				"VALUES ('janeDoe@revisor.com', 'Revi2', 'num2', '1985-04-04', 'La Solana', 'revisor2', 'R')"; 
+    		ag.insert(sql_5);
+    		String sql_6 = "INSERT INTO Reviewer (email, karma,VIP) VALUES ('janeDoe@revisor.com', '4','0')"; 
+    		ag.insert(sql_6);
+    		String sql_7 = "INSERT INTO Tag (issue) VALUES ('TESTER')";
+    		ag.insert(sql_7);
+    		String sql_8 = "SELECT idTag FROM Tag WHERE issue ='TESTER'";
+    		ResultSet r = ag.query(sql_8);
+    		r.next();
+    		int idTag = r.getInt("idTag");
+    		String sql_9 = "INSERT INTO ReviewerTag (reviewer_mail, idTag) VALUES ('johnSmith@revisor.com', " + idTag + ")";
+    		ag.insert(sql_9);
+    		String sql_10 = "INSERT INTO ReviewerTag (reviewer_mail, idTag) VALUES ('janeDoe@revisor.com', " + idTag + ")";
+    		ag.insert(sql_10);
+    	}catch(Exception e){
+    		Assert.fail(e.toString());
+    	}    	 
+    }  
+      
+    @AfterClass  
+    public static void tearDownClass() throws Exception {
+    	try{
+    		Agent ag = Agent.getDbCon();
+    		String sql_1 = "DELETE FROM User WHERE email='johnDoe@autor.com'";
+    		ag.insert(sql_1);
+    		String sql_2 = "DELETE FROM User WHERE email='johnSmith@revisor.com'";
+    		ag.insert(sql_2);
+    		String sql_3 = "DELETE FROM User WHERE email='janeDoe@revisor.com'";
+    		ag.insert(sql_3);
+    		String sql_4 = "DELETE FROM Tag WHERE issue='TESTER'";
+    		ag.insert(sql_4);
+    	}catch(Exception e){
+    		Assert.fail(e.toString());
+    	}
+    	System.out.println("Fin TestSistema");
+    }  
+      
+    @Before  
+    public void setUp() {  
+    	User u = new User();
+    	u.setEmail("johnDoe@autor.com");
+    	this.au = new Author(u);
+    	this.ar = new Article("Test title", "2012-10-10", au.getEmail(), "Test comement", "", -1,"Ejemplo");
+    }  
+      
+    @After  
+    public void tearDown(){
+    	try {
+    		Agent ag = Agent.getDbCon();
+        	String sql_1 = "DELETE FROM Article WHERE idAuthor='johnDoe@autor.com'";
+			ag.insert(sql_1);
+		} catch(Exception e){
+			Assert.fail(e.toString());
+		}
+    	
+    }
+      
+    @Test
+    public void publicationsTo2Reviewer(){
+    	System.out.println("\tTest publicationsTo2Reviewer...");
+    	try{
+    		au.send_publication(ar, 0);
+    		au.set_articleTag(ar, "TESTER");
+    		Sistema s = new Sistema();
+    		s.PublicationsToReviewer(ar);
+	    	LinkedList<Article> postList = au.get_publications();
+	    	String sql = "SELECT count(idArticle) FROM ArticleReview WHERE idArticle='" + postList.getFirst().getId() + "'";
+	    	Agent ag = Agent.getDbCon();
+	    	ResultSet r = ag.query(sql);
+	    	r.next();
+	    	Assert.assertEquals(2, r.getInt("count(idArticle)"));
+    	}catch(Exception e){
+    		Assert.fail(e.toString());
+    	}
+    }   
+    
+}

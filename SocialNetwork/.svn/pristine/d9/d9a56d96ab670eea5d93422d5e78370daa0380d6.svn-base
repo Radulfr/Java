@@ -1,0 +1,49 @@
+package Dominion;
+
+import java.sql.ResultSet;
+
+import Persistence.Broker;
+import Persistence.Conexion;
+
+import com.mysql.jdbc.PreparedStatement;
+
+
+public class Probando {
+
+	public static void main(String[] args) throws Exception {
+		
+		Broker bk1 = Broker.get();
+		Conexion cn1 = bk1.getBD();
+		System.out.println(cn1.getId());
+		PreparedStatement stmt1 = (PreparedStatement) cn1.prepareStatement("SELECT * FROM User");
+		ResultSet r1 = stmt1.executeQuery();
+		r1.next();
+		System.out.println(r1.getString("name"));
+		cn1.close();
+		
+
+		Conexion cn2 = bk1.getBD();
+		System.out.println(cn2.getId());
+		PreparedStatement stmt2 = (PreparedStatement) cn2.prepareStatement("SELECT * FROM Article");
+		ResultSet r2 = stmt2.executeQuery();
+		r2.next();
+		System.out.println(r2.getString("title"));
+		cn2.close();
+		
+		Conexion cn3 = bk1.getBD();	
+		System.out.println(cn3.getId());
+		PreparedStatement stmt3 = (PreparedStatement) cn2.prepareStatement("SELECT * FROM Article");
+		ResultSet r3 = stmt3.executeQuery();
+		r3.next();
+		System.out.println(r3.getString("body"));
+		cn3.close();
+		
+		Conexion cn4 = Broker.get().getBD();
+		System.out.println(cn4.getId());
+		PreparedStatement stmt4 = (PreparedStatement) cn2.prepareStatement("SELECT * FROM Article");
+		ResultSet r4 = stmt4.executeQuery();
+		System.out.println(r4);
+		cn4.close();
+	}
+
+}

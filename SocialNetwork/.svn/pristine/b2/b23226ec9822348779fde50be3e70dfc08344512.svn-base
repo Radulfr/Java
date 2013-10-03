@@ -1,0 +1,160 @@
+package Dominion;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import java.util.LinkedList;
+
+import utilidades.leer;
+
+import Persistence.Agent;
+import Persistence.AgentFactory;
+
+public class Reviewer extends User {
+	
+	protected int karma;
+	protected int VIP;
+	
+
+//	public Reviewer(String email, String password, String name, String sname, String city, String bdate, int vip) {
+//		super(email, password, name, sname, city, bdate);
+//		karma=0;
+//		VIP=vip;		
+//	}
+	
+	public Reviewer(User u){
+		super(u.getEmail(),u.getPassword(),u.getName(),u.getSecondName(),u.getCity(),u.getBirthDate());
+		Agent ag = Agent.getDbCon();
+		try {
+			this.karma = ag.getKarmaOfReviewer(u.getEmail());
+			this.VIP= ag.getVIPOfReviewer(u.getEmail());
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}		
+	}
+	
+	public Reviewer(){
+		super();
+		karma=0;
+		VIP=0;
+	}
+	
+	
+	//SETS
+	
+	public void setKarma(int k){
+		karma=karma+k;
+	}
+	
+	public void setVIP(int v){
+		VIP=v;
+	}
+	
+	
+	//GETS
+	
+	public int getKarma(){
+		return karma;
+	}
+	
+	public int getVIP(){
+		return VIP;
+	}
+	
+	
+	
+	public LinkedList<ArticleReview> get_unresolved_reviews()throws SQLException{
+		/*
+		 * Muestra la lista de Articles del
+		 * revisor con estado unresolved
+		 */
+		ResultSet r = null; 
+		LinkedList<ArticleReview> l = new LinkedList<ArticleReview>(); 
+		
+		AgentFactory ag = Agent.getDbCon();
+		
+		r=ag.get_unresolved_publications(this); 
+		
+		// Cargamos la lista con el resultado
+		while(r.next()){
+			ArticleReview artrev = new ArticleReview (r.getInt("idArticle"),r.getString("reviewer_mail"), r.getString("comment"), r.getString("review_date"), r.getString("state_review"), r.getInt("mark"));
+			l.add(artrev); 
+		}
+		return l;
+		
+	}
+	public LinkedList<ArticleReview> get_resolved_reviews()throws SQLException{
+		/*
+		 * Muestra la lista de Articles del
+		 * revisor con estado resolved
+		 */
+		ResultSet r = null; 
+		LinkedList<ArticleReview> l = new LinkedList<ArticleReview>(); 
+		
+		AgentFactory ag = Agent.getDbCon();
+		
+		r=ag.get_resolved_publications(this); 
+		
+		// Cargamos la lista con el resultado
+		while(r.next()){
+			ArticleReview artrev = new ArticleReview (r.getInt("idArticle"),r.getString("reviewer_mail"), r.getString("comment"), r.getString("review_date"), r.getString("state_review"), r.getInt("mark"));
+			l.add(artrev); 
+		}
+		return l;
+		
+	}
+	
+	public boolean asses_publication(Article a,  int nota)throws SQLException{
+		//Suponiendo que el articulo a corresponde a la evaluacion del revisor this.
+		/*
+		 * Seteamos el origen del mensaje y lo pasamos
+		 * al agente
+		 */
+		String state = a.getState();
+		boolean puedo=false;
+		AgentFactory ag = Agent.getDbCon(); 
+		ResultSet r= ag.get_articleReview(a.getId(), this.email);
+		r.next();
+		if(r.getString("state_review").equals("unresolved")) {
+			puedo=true;
+			if(state.equals("sent"))
+				state="halfreviewed";
+			else if(state.equals("halfreviewed"))
+				state="reviewed";
+			else if(state.equals("sentVIP"))
+				state="halfreviewedVIP";
+			else if(state.equals("halfreviewedVIP"))
+				state="reviewed";
+				
+			if(state.equals("reviewed")){
+				Notification not = new Notification(a.getId_author(), "ARTICLE REVIEWED", "UNREAD", leer.fecha()); 
+				not.send();
+			}
+			
+			if (ag.asses_articlereview(a, state, this, nota)==1)
+				System.out.println("Puntuado con "+nota+" puntos el articulo con id " +a.getId()+"\n"); 
+			else
+				System.out.println("Algo salió mal");
+			
+			a.setMark();  //se realiza una media entre todos los ArticleReview de ese artículo
+			ag.addKarmaAuthor(a.getId_author(), nota);
+			ag.addKarmaReviewer(this.email);
+		}		
+		return puedo;
+	}
+	
+	//TODO MODIFICAR
+	//TODO el revisor deja un comentario en un ArticleReview no en el Article
+	// ---> Este es el comentario que deja el AUTOR del artículo
+	public void leave_comment(Article a,String comment)throws SQLException{
+		//Hace un comentario. 
+		AgentFactory ag = Agent.getDbCon(); 
+		if (ag.set_comment_reviewer(this,a.getId(), comment)>=1)
+			System.out.println("Comentario \""+comment+"\" realizado\n"); 
+		else
+			System.out.println("Algo salió mal"); 
+	}
+	
+
+
+}

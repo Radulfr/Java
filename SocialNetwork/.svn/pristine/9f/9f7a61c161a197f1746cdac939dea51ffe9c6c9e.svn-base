@@ -1,0 +1,79 @@
+package Persistence;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import Dominion.*;
+
+public class TagDAO extends CrudDAO<Tag>{
+
+    @Override
+    public void create(Tag t) {
+        String sqlQuerry = "INSERT INTO Tag (issue) VALUES ('"+t.getIssue()+"')";
+        try {
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    }
+
+    @Override
+    public void delete(Tag t) {
+    	 try {
+ 			AgenteBD.getDbCon().queryUpdate("DELETE FROM Tag WHERE idTag='"+t.getIdTag()+"'");
+ 		} catch (SQLException e) {
+ 			e.printStackTrace();
+ 		}
+    }
+ 
+    @Override
+    public Tag read(Tag t) throws SQLException {
+      ResultSet rs = AgenteBD.getDbCon().query("SELECT * FROM Tag WHERE issue='"+t.getIssue()+"'");
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                    t.setIdTag(rs.getInt("idTag"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        return t;
+    }
+    
+
+    @Override
+    public void update(Tag t) {
+    	 String sqlQuerry="UPDATE Tag SET issue='"+t.getIssue()
+		         + "' WHERE idTag='"+t.getIdTag()+"'";
+		try {
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}       
+    }
+    
+    
+    @Override
+    public LinkedList<Tag> readAll(Tag t)throws SQLException{
+    	ResultSet rs = AgenteBD.getDbCon().query("SELECT * FROM Tag");
+    	
+    	LinkedList<Tag> listTag = new LinkedList<Tag>();
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                	Tag tg = new Tag();
+                    tg.setIdTag(rs.getInt("idTag"));
+                    tg.setIssue(rs.getString("issue"));
+                    listTag.add(tg);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        return listTag;
+    }
+}

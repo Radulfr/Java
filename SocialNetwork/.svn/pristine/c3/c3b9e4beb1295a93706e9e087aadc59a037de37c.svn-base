@@ -1,0 +1,107 @@
+package Persistence;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import Dominion.*;
+
+public class ArticleReviewDAO extends CrudDAO<ArticleReview>{
+
+    @Override
+    public void create(ArticleReview artrev) {
+        String sqlQuerry = "INSERT INTO ArticleReview (idArticle, reviewer_mail, comment, review_date, state_review, mark) VALUES ('"
+        		+artrev.getIdArticle()+"','"+artrev.getReviewer_mail()+"','"+artrev.getComment()+"','"
+        		+artrev.getReview_date()+"','"+artrev.getState_review()
+        		+"','"+artrev.getMark()+"')";
+        try {
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    }
+
+    @Override
+    public void delete(ArticleReview artrev) {
+    	 try {
+ 			AgenteBD.getDbCon().queryUpdate("DELETE FROM ArticleReview WHERE idArticle='"+artrev.getIdArticle()+"' and reviewer_mail='"+artrev.getReviewer_mail()+"'");
+ 		} catch (SQLException e) {
+ 			e.printStackTrace();
+ 		}
+    }
+
+    
+    @Override
+    public ArticleReview read(ArticleReview artrev) throws SQLException {
+      ResultSet rs = AgenteBD.getDbCon().query(
+                "SELECT * FROM ArticleReview WHERE idArticle='"+artrev.getIdArticle()+"' and reviewer_mail='"+artrev.getReviewer_mail()+"'");
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                    artrev.setComment(rs.getString("comment"));
+                    artrev.setReview_date(rs.getString("review_date"));
+                    artrev.setState_review(rs.getString("state_review"));
+                    artrev.setMark(rs.getInt("mark"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        return artrev;
+    }
+
+
+    @Override
+    public void update(ArticleReview artrev) {
+    	 String sqlQuerry="UPDATE ArticleReview SET comment='"+artrev.getComment()
+		         +"', review_date='" + artrev.getReview_date()
+		         +"', state_review='" +artrev.getState_review()
+		         +"', mark='"+artrev.getMark()
+		         + "' WHERE idArticle='"+artrev.getIdArticle()+"' and reviewer_mail='"+artrev.getReviewer_mail()+"'";
+		try {
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}       
+    }
+
+
+    @Override
+    public LinkedList<ArticleReview> readAll(ArticleReview artrev)throws SQLException{
+    	String consult = "SELECT * FROM ArticleReview WHERE idArticle='"+artrev.getIdArticle()+"'";
+    	
+    	if (artrev.getReviewer_mail()!=null) {
+    		//busqueda a unresolved, a otro estado o sin estado.
+    		if (artrev.getState_review().equalsIgnoreCase("unresolved")) consult = "SELECT * FROM ArticleReview WHERE reviewer_mail='"+artrev.getReviewer_mail()+"' AND state_review <> 'reviewed' AND state_review <> 'cancelled'";
+    		else if (artrev.getState_review()!=null) consult = "SELECT * FROM ArticleReview WHERE reviewer_mail='"+artrev.getReviewer_mail()+"' AND state_review='"+artrev.getState_review()+"'";
+    		else consult = "SELECT * FROM ArticleReview WHERE reviewer_mail='"+artrev.getReviewer_mail()+"'";
+    	}
+    	
+    	if (artrev.getMark()!=-1){
+    		consult = "SELECT * FROM ArticleReview WHERE idArticle='"+artrev.getIdArticle()+"' AND mark>='"+artrev.getMark()+"'";
+    	}
+    	
+    	ResultSet rs = AgenteBD.getDbCon().query(consult);
+    	
+    	LinkedList<ArticleReview> listArtRev = new LinkedList<ArticleReview>();
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                	ArticleReview ar = new ArticleReview();
+                    ar.setIdArticle(rs.getInt("idArticle"));
+                    ar.setReviewer_mail(rs.getString("reviewer_mail"));
+                    ar.setComment(rs.getString("comment"));
+                    ar.setReview_date(rs.getString("review_date"));
+                    ar.setState_review(rs.getString("state_review"));
+                    ar.setMark(rs.getInt("mark"));
+                    listArtRev.add(ar);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        return listArtRev;
+    }
+}

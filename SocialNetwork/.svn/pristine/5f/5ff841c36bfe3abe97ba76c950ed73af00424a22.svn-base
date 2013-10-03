@@ -1,0 +1,75 @@
+package Persistence;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import Dominion.*;
+
+public class PublisherReviewerDAO extends CrudDAO<PublisherReviewer>{
+
+    @Override
+    public void create(PublisherReviewer pr) {
+        String sqlQuerry = "INSERT INTO PublisherReviewer VALUES ('"+pr.getPublisher_mail()+"','"+pr.getReviewer_mail()+"')";
+        try {
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    }
+
+    @Override
+    public void delete(PublisherReviewer pr) {
+    	 try {
+ 			AgenteBD.getDbCon().queryUpdate("DELETE FROM PublisherReviewer WHERE publisher_mail='"+pr.getPublisher_mail()+"' AND reviewer_mail='"+pr.getReviewer_mail()+"'");
+ 		} catch (SQLException e) {
+ 			e.printStackTrace();
+ 		}
+    }
+ 
+    @Override
+    public PublisherReviewer read(PublisherReviewer pr) throws SQLException {
+    	PublisherReviewer p = new PublisherReviewer();
+    	ResultSet rs = AgenteBD.getDbCon().query("SELECT * FROM PublisherReviewer WHERE publisher_mail='"+pr.getPublisher_mail()+"' AND reviewer_mail='"+pr.getReviewer_mail()+"'");
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                    p.setPublisher_mail(rs.getString("publisher_mail"));
+                    p.setReviewer_mail(rs.getString("reviewer_mail"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        return p;
+    }
+    
+
+    @Override
+    public void update(PublisherReviewer t) {
+    	//No se va a dar el caso. Solo se borran y crean      
+    }
+    
+    
+    @Override
+    public LinkedList<PublisherReviewer> readAll(PublisherReviewer pr)throws SQLException{
+    	ResultSet rs = AgenteBD.getDbCon().query("SELECT * FROM PublisherReviewer WHERE publisher_mail='"+pr.getPublisher_mail()+"'");
+    	
+    	LinkedList<PublisherReviewer> listPublisherReviewer = new LinkedList<PublisherReviewer>();
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                	PublisherReviewer p = new PublisherReviewer();
+                    p.setPublisher_mail(rs.getString("publisher_mail"));
+                    p.setReviewer_mail(rs.getString("reviewer_mail"));
+                    listPublisherReviewer.add(p);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        return listPublisherReviewer;
+    }
+}

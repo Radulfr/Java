@@ -1,0 +1,50 @@
+package SocialNetwork.actions;
+
+import java.util.*;
+
+import Dominion.Author;
+import Dominion.Article;
+import Dominion.User;
+
+
+
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+
+public class GetPublications extends ActionSupport{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private LinkedList<Article> publications; 
+
+	private boolean results=false;
+	
+	public String execute() {
+		Author a;
+		User u; 
+		try {
+			Map<String, Object> session = ActionContext.getContext().getSession();  // Get session
+
+			u =  (User) session.get("user"); 
+
+			a = new Author(u);
+			publications = a.get_publications();
+			if(!publications.isEmpty())
+				results=true;
+
+			return SUCCESS; 
+		}
+		catch (Exception e) {
+			return ERROR;
+		}
+	}
+
+	public LinkedList<Article> getPublications(){
+		return this.publications;
+	}
+	public boolean getResults(){
+		return this.results; 
+	}
+
+}

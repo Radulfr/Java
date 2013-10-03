@@ -1,0 +1,34 @@
+package Dominion;
+
+import java.sql.SQLException;
+import Persistence.*;
+import utilidades.leer;
+
+public class Admin extends User {
+
+	public Admin() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public Admin(String email, String password, String name, String sname,
+			String city, String bdate) {
+		super(email, password, name, sname, city, bdate);
+		// TODO Auto-generated constructor stub
+	}
+
+	public Admin(String email) throws SQLException {
+		super(email);
+		// TODO Auto-generated constructor stub
+	}
+	public Admin(User u) throws SQLException {
+		this.setEmail(u.getEmail());
+		this.setName("Admin");
+		this.setSecond_name("Admin"); 
+		this.setPassword("admin"); 
+		this.setCity(u.getCity());
+		this.setBirth_date(u.getBirth_date());
+		// TODO Auto-generated constructor stub
+	}
+
+}

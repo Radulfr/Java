@@ -1,0 +1,43 @@
+package SocialNetwork.actions;
+
+import java.util.Map;
+
+import Dominion.Article;
+import Dominion.Reviewer;
+
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+
+public class AssesPublication extends ActionSupport{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private int id;
+	private int mark;
+	
+	public String execute() {
+		Reviewer r = new Reviewer();
+		Map<String, Object> session = ActionContext.getContext().getSession();  // Get session
+		try {
+			r = (Reviewer) session.get("user"); 
+			//comprobar si ya esta evaluada
+			Article ar = new Article(id);
+			if(r.asses_publication(ar, mark))  return SUCCESS; 
+			else return ERROR;
+		}
+		catch (Exception e) {
+			session.put("error_message", "Error putting a mark: try again please");
+			return ERROR;
+		}
+	}
+	
+	public void setIdUnres(String idArticle){
+		this.id = Integer.parseInt(idArticle);
+	}
+	
+	public void setCbmarks(String marks){
+		this.mark = Integer.parseInt(marks);
+	}
+
+}

@@ -1,0 +1,40 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+ <%@taglib uri="/struts-tags" prefix="s" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>My messages</title>
+<link rel="stylesheet" href="Style.css" type="text/css" />
+</head>
+<body>
+<h2>My messages</h2>
+<hr>
+<jsp:include page="header.jspf"></jsp:include>
+<hr>
+<h4>Write a message</h4>
+<s:form action="escribir">
+
+	<s:textfield name="messageto" label="Message to" />
+	<s:textarea  name="messagebody" label="Message body" cols="40" rows="10" />
+	<s:submit value="Submit"></s:submit>
+
+</s:form>
+
+<hr>
+<h4>View my messages</h4>
+	<s:form action="mensajes2">
+		<s:submit value="View messages"></s:submit>
+		<s:iterator value="MessageList" status="itStatus">
+			<li>
+			 <s:property value="getDate()" /> - From: [<s:property value="getEmail_from()"/>]: <s:property value="getBody()" />
+			</li>
+		</s:iterator>
+	</s:form>
+
+
+
+
+</body>
+</html>

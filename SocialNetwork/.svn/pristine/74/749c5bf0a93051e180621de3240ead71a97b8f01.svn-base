@@ -1,0 +1,50 @@
+package SocialNetwork.actions;
+
+import java.util.*;
+import Dominion.User;
+
+
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+
+public class Buscar extends ActionSupport{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private String name;
+	private String userfound="nothing"; 
+	private boolean found=true; 
+	
+	public String execute() {
+		User u = new User();
+		User aux=null; 
+		try {
+			Map<String, Object> session = ActionContext.getContext().getSession();  // Get session
+			u = (User) session.get("user");
+			aux=u.search_user(this.name);
+			if(aux!=null)
+				userfound=aux.getEmail();
+			else
+				found=false; 
+					
+
+			return SUCCESS; 
+		}
+		catch (Exception e) {
+			return ERROR;
+		}
+	}
+
+
+	public void setName(String name){
+		this.name=name; 
+	}
+	public String getUserfound(){
+		return this.userfound; 
+	}
+	public boolean getFound(){
+		return this.found;
+	}
+
+}

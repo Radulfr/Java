@@ -1,0 +1,130 @@
+package Persistence;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import Dominion.*;
+
+public class PublisherDAO extends CrudDAO<Publisher>{
+
+    @Override
+    public void create(Publisher publi) {
+        String sqlQuerry = "INSERT INTO Publisher (email, journal, web) VALUES ('"
+        		+publi.getEmail()+"','"+publi.getJournal()+"','"+publi.getWeb()+"')";
+        String sqlQuerry2 = "INSERT INTO User (email, name, second_name, birth_date, city, pass, rol) VALUES ('"
+        		+publi.getEmail()+"','"+publi.getName()+"','"+publi.getSecond_name()+"','"
+        		+publi.getBirth_date()+"','"+publi.getCity()+"','"
+        		+publi.getPassword()+"','E')";
+        try {
+        	AgenteBD.getDbCon().queryUpdate(sqlQuerry2);
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    }
+
+    @Override
+    public void delete(Publisher publi) {
+    	 try {
+ 			AgenteBD.getDbCon().queryUpdate("DELETE FROM Publisher WHERE email='"+publi.getEmail()+"'");
+ 			AgenteBD.getDbCon().queryUpdate("DELETE FROM User WHERE email='"+publi.getEmail()+"'");
+ 		} catch (SQLException e) {
+ 			e.printStackTrace();
+ 		}
+    }
+
+    @Override
+    public Publisher read(Publisher publi) throws SQLException {
+      ResultSet rs = AgenteBD.getDbCon().query(
+                "SELECT * FROM Publisher WHERE email='" + publi.getEmail()+ "'");
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                    publi.setJournal(rs.getString("journal"));
+                    publi.setWeb(rs.getString("web"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        ResultSet rs2 = AgenteBD.getDbCon().query("SELECT * FROM User WHERE email='" + publi.getEmail()+"'");
+        if (rs2 != null) {
+            try {
+                while (rs2.next()) {
+                    publi.setName(rs2.getString("name"));
+                    publi.setSecond_name(rs2.getString("second_name"));
+                    publi.setBirth_date(rs2.getString("birth_date"));
+                    publi.setCity(rs2.getString("city"));
+                    publi.setPassword(rs2.getString("pass"));
+					publi.setRol(rs2.getString("rol"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs2.close();
+        return publi;
+    }
+
+    @Override
+    public void update(Publisher publi) {
+    	 String sqlQuerry="UPDATE Publisher SET journal='"+publi.getJournal()
+		         +"', web='" + publi.getWeb()
+		         + "' WHERE email='" + publi.getEmail()+ "'";
+    	 String sqlQuerry2="UPDATE User SET name='"+publi.getName()
+		         +"', second_name='" + publi.getSecond_name()
+		         +"', birth_date='" +publi.getBirth_date()
+		         +"', city='"+publi.getCity()
+		         +"', pass='"+ publi.getPassword()
+		         +"', rol='"+publi.getRol()
+		         + "' WHERE email='" + publi.getEmail()+ "'";
+		try {
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry2);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}       
+    }
+
+	@Override
+	public LinkedList<Publisher> readAll(Publisher obj) throws SQLException {
+		ResultSet rs = AgenteBD.getDbCon().query("SELECT * FROM Publisher");
+    	LinkedList<Publisher> listPublisher = new LinkedList<Publisher>();
+    	String consult;
+    	ResultSet rs2;
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                	Publisher p = new Publisher();
+                	p.setEmail(rs.getString("email"));
+                    p.setJournal(rs.getString("journal"));
+                    p.setWeb(rs.getString("web"));
+                    consult =  "SELECT * FROM User WHERE email='" + p.getEmail()+"'";
+                    rs2 = AgenteBD.getDbCon().query(consult);
+                    if (rs2 != null) {
+                        try {
+                            while (rs2.next()) {
+                                p.setName(rs2.getString("name"));
+                                p.setSecond_name(rs2.getString("second_name"));
+                                p.setBirth_date(rs2.getString("birth_date"));
+                                p.setCity(rs2.getString("city"));
+                                p.setPassword(rs2.getString("pass"));
+            					p.setRol(rs2.getString("rol"));
+                            }
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    rs2.close();
+                    listPublisher.add(p);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        return listPublisher;
+	}
+}

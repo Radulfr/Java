@@ -1,0 +1,150 @@
+package Dominion;
+
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import utilidades.leer;
+import Persistence.ArticleReviewDAO;
+import Persistence.Broker;
+import Persistence.Conexion;
+import Persistence.CrudDAO;
+import Persistence.NoHayConexionesException;
+import Persistence.NotificationDAO;
+import Persistence.ReviewerTagDAO;
+
+
+public class Sistema{
+	private Author autor; 
+	
+	public Sistema(Author a){
+		this.setAutor(a); 
+	}
+	
+	
+	/*
+	 * Devuelve una LinkedList con los Revisores asignados al articulo pasado por parámetro
+	 */
+	public LinkedList<String> PublicationsToReviewer(Author aut, Article art, int idTag){
+		LinkedList<ReviewerTag> RevisoresMismoTag = new LinkedList<ReviewerTag>();	
+		LinkedList<String> Retorno = new LinkedList<String>(); 
+		
+		CrudDAO<Notification> notdao = new NotificationDAO(); 
+		CrudDAO<ArticleReview> ardao = new ArticleReviewDAO(); 
+		ArticleReview a = new ArticleReview(); 
+		
+		Notification n;
+
+		
+		//Desde aqui
+
+		 
+		CrudDAO<ReviewerTag> reviewertagdao = new ReviewerTagDAO(); 
+		ReviewerTag rt = new ReviewerTag(); 
+		rt.setIdTag(idTag); 
+		try {
+			RevisoresMismoTag = reviewertagdao.readAll(rt);
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} 
+
+			//---------------------------------------------------------
+		int KarmaAuthor = aut.getKarma();
+
+		//Introducimos la relacion de los 2 revisores que miraran el articulo
+		try{
+			Retorno=TwoReviewerByTag(RevisoresMismoTag,KarmaAuthor);
+			System.out.println(Retorno.toString());
+			while(!Retorno.isEmpty()){ // De esta manera controlamos que si hay un solo revisor no da fallos
+				if(!Retorno.element().equals("Empty")){
+					a.setIdArticle(art.getId());
+					a.setReviewer_mail(Retorno.element()); 
+					a.setReview_date(leer.fecha()); 
+					ardao.create(a); 
+					n=new Notification(Retorno.remove().toString(),"New article","UNREAD",utilidades.leer.fecha());
+					notdao.create(n);
+				}
+			}
+		}
+		catch(Exception e){
+			System.out.println("Error asignando revisores"); 
+		}
+		return Retorno;
+		
+	}
+
+	private LinkedList<String> TwoReviewerByTag (LinkedList<ReviewerTag> L, int karmaAut)throws SQLException{
+		LinkedList<String> retorno = new LinkedList<String>();
+		
+		int MAXKARMA = 99999999;
+		int TwoK [] = new int[2];
+		TwoK[0]=MAXKARMA;
+		TwoK[1]=MAXKARMA;
+		
+		String TwoR [] = new String[2];
+		TwoR[0]="Empty";
+		TwoR[1]="Empty";
+		
+		int KR, KA = Math.abs(karmaAut);
+	
+		/*
+		 * Este bucle recorre todos los revisores que coinciden con el TAG del articulo
+		 * y quedan en una lista los 2 revisores con los karmas mas similares.
+		 */
+		for(int i=1; i<L.size();i++){
+			Reviewer r= new Reviewer(L.get(i).getReviewer_mail());
+			KR = Math.abs(r.getKarma());
+			int resta = Math.abs(KA-KR);
+			
+			
+			if(resta<TwoK[0] && resta>=TwoK[1]){
+				TwoK[0]=resta;
+				TwoR[0]=L.get(i).getReviewer_mail();
+			}
+			
+			else if(resta<TwoK[1] && resta>=TwoK[0]){
+				TwoK[1]=resta;
+				TwoR[1]=L.get(i).getReviewer_mail();
+			}
+			
+			else if(resta<TwoK[0] && resta<TwoK[1]){
+				if(Math.abs(resta-TwoK[0]) >= Math.abs(resta-TwoK[1])){
+					TwoK[0]=resta;
+					TwoR[0]=L.get(i).getReviewer_mail();
+				}
+				else{
+					TwoK[1]=resta;
+					TwoR[1]=L.get(i).getReviewer_mail();
+				}
+			}
+			
+		}
+		System.out.println(TwoR[0] + " - " + TwoR[1]); 
+		retorno.add(TwoR[0]);
+		retorno.add(TwoR[1]);
+		return retorno;
+	}
+	
+	/***
+	 * @desc Sets the mark of a publication
+	 * @param idArticle (int)
+	 * @return Mark set
+	 * @throws SQLException 
+	 */
+	public void setMarkOfPublication (int idArticle) throws SQLException{
+		Article a = new Article(idArticle);
+		a.setMark();
+	}
+
+
+	public Author getAutor() {
+		return autor;
+	}
+
+
+	public void setAutor(Author autor) {
+		this.autor = autor;
+	}
+
+	
+}

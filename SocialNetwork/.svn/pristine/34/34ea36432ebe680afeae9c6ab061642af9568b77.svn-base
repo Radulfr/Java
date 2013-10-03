@@ -1,0 +1,20 @@
+package OldPersistence;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import Dominion.ArticleReview;
+import Dominion.Publisher;
+
+
+
+public interface PublisherDAO {
+	public ResultSet get_reviewers(Publisher publisher) throws SQLException;
+	public int add_publisher_reviewer(Publisher publisher, String mail) throws SQLException;
+	public int delete_publisher_reviewer(Publisher publisher, String mail) throws SQLException;
+	public ResultSet getReviewsFromReviewer(String reviewer, Publisher publisher) throws SQLException;
+	public ResultSet get_reviewer_by_mail(String mail) throws SQLException;
+	public int add_article_review(ArticleReview art_rev) throws SQLException;
+	public ResultSet search_reviewer(String searchid) throws SQLException;
+	
+
+}

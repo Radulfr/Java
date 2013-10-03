@@ -1,0 +1,78 @@
+package Persistence;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import Dominion.*;
+
+public class ReviewerTagDAO extends CrudDAO<ReviewerTag>{
+
+    @Override
+    public void create(ReviewerTag rt) {
+        String sqlQuerry = "INSERT INTO ReviewerTag VALUES ('"+rt.getReviewer_mail()+"','"+rt.getIdTag()+"')";
+        try {
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    }
+
+    @Override
+    public void delete(ReviewerTag rt) {
+    	 try {
+ 			AgenteBD.getDbCon().queryUpdate("DELETE FROM ReviewerTag WHERE reviewer_mail='"+rt.getReviewer_mail()+"' AND idTag='"+rt.getIdTag()+"'");
+ 		} catch (SQLException e) {
+ 			e.printStackTrace();
+ 		}
+    }
+
+    
+    @Override
+    public ReviewerTag read(ReviewerTag rt) throws SQLException {
+      ResultSet rs = AgenteBD.getDbCon().query("SELECT * FROM ReviewerTag WHERE reviewer_mail='"+rt.getReviewer_mail()+"' AND idTag='"+rt.getIdTag()+"'");
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                    rt.setIdTag(rs.getInt("idTag"));
+                    rt.setReviewer_mail(rs.getString("reviewer_mail"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        return rt;
+    }
+
+    @Override
+    public void update(ReviewerTag rt) {
+    	 //No se va a dar el caso. Solo se crean o se borran       
+    }
+    
+    @Override
+    public LinkedList<ReviewerTag> readAll(ReviewerTag rt)throws SQLException{
+    	String consult;
+    	if (rt.getReviewer_mail()==null){
+    		if (rt.getIdTag()==0) consult = "SELECT * FROM ReviewerTag";
+    		else consult="SELECT * FROM ReviewerTag WHERE idTag='"+rt.getIdTag()+"'";
+    	}else consult= "SELECT * FROM ReviewerTag WHERE reviewer_mail='"+rt.getReviewer_mail()+"'";
+    	ResultSet rs = AgenteBD.getDbCon().query(consult);
+    	
+    	LinkedList<ReviewerTag> listRevTag = new LinkedList<ReviewerTag>();
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                	ReviewerTag rev = new ReviewerTag();
+                    rev.setIdTag(rs.getInt("idTag"));
+                    rev.setReviewer_mail(rs.getString("reviewer_mail"));
+                    listRevTag.add(rev);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        return listRevTag;
+    }
+}

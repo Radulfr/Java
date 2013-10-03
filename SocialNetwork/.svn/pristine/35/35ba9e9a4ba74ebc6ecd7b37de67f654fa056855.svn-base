@@ -1,0 +1,33 @@
+package SocialNetwork.actions;
+
+import java.util.*;
+import Dominion.User;
+
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+
+public class Amigos extends ActionSupport{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private LinkedList<String> friendlist; 
+	
+	public String execute() {
+		User u = new User(); 
+		try {
+			Map<String, Object> session = ActionContext.getContext().getSession();  // Get session
+			
+			u = (User) session.get("user"); 
+			this.friendlist = u.view_contacts(); 
+			return SUCCESS; 
+		}
+		catch (Exception e) {
+			return ERROR;
+		}
+	}
+
+	public LinkedList<String> getFriendlist(){
+		return friendlist;
+	}
+}

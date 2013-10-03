@@ -1,0 +1,19 @@
+<table border="1">
+	<tr>
+		<td>
+			<a href="home.jsp">Home</a>
+		</td>
+		<td>
+			<a href="Messages.jsp">Messages</a>
+		</td>
+		<td>
+			<a href="Friends.jsp">Friends</a>
+		</td>
+		<td>
+			<a href="Myprofile.jsp">My Profile</a>
+		</td>
+		<td>
+			<a href="index.jsp"  >Logout </a>
+		</td>		
+	</tr>
+</table>

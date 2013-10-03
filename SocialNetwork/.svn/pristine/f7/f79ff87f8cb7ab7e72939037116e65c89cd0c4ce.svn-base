@@ -1,0 +1,170 @@
+package Dominion;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import utilidades.leer;
+
+public class NoPersistenceP {
+
+	/**
+	 * @param args
+	 * @throws Exception
+	 * @author Buggin' & Debuggin' 
+	 */
+	public static void main(String[] args) throws Exception {
+		User u = new User(); 
+		Publisher p = new Publisher();
+		boolean sesion=false;
+		int opt = 0; 
+		
+		System.out.println("================================");
+		System.out.println("  Red Social Autores/Editores   ");
+		System.out.println("================================\n");
+		String email = leer.cadena("Introduzca email:"); 
+		String password = leer.cadena("Introduzca Password:");
+		System.out.println("Consultando...");
+		u = u.log(email, password);
+		
+		if(u!=null){
+			System.out.println("Bienvenido\n" +u.toString());
+			sesion = true; 
+			p = new Publisher(u);
+		}
+		else{
+			System.out.println("Log incorrecto");
+			sesion = false; 
+		}
+		
+		while(sesion){
+
+			show_menu(); 
+			
+			opt = leer.entero(); 
+			switch(opt){
+			case 0:
+				System.out.println("\n== Out ==");
+				sesion=false;
+				break; 
+			case 1: 
+				SearchReviewer(p);
+			break;
+			case 2:
+				ViewReviewersList(p);
+			break;
+			case 3:
+				AddReviewer(p);
+			break;
+			case 4: 
+				DeleteReviewer(p);
+			break;
+			case 5:
+				GetReviewfrom(p);
+			break;
+			}
+		}
+
+
+	}
+	
+	private static void SearchReviewer(Publisher p) throws Exception{
+
+		int opt = leer.entero("Search by:\n(1) Email\n(2) View All");
+		
+		switch(opt){
+		case(1):
+			String mail = leer.cadena("Introduce the email of the reviewer");
+			Reviewer rev = p.get_reviewer(mail);
+			System.out.println("Email: " + rev.getEmail());
+			System.out.println("Name: " + rev.getName() + rev.getSecondName());
+			System.out.println("City: " + rev.getCity());
+		break;
+		case(2):
+			showQuery(p.get_reviewers());
+		break;
+		}
+	}
+	
+	private static void ViewReviewersList(Publisher p) throws SQLException{
+		LinkedList<String> l = p.get_Reviewer_list();
+		if(l.isEmpty())
+			System.out.println("\nThe reviewer list is empty");
+		else
+			System.out.println(l.toString());
+	}
+	
+	private static void AddReviewer(Publisher p) throws Exception{
+		String mail = leer.cadena("Introduce the email of the reviewer");
+		p.add_reviewer(mail);
+	}
+	
+	private static void DeleteReviewer(Publisher p) throws Exception{
+		String mail = leer.cadena("Introduce the email of the reviewer");
+		p.delete_reviewer(mail);
+	}
+	
+
+	private static void GetReviewfrom(Publisher p) throws Exception{
+		int opt = leer.entero("Show Articles by:\n(1) Not Reviewed\n(2) View All");
+		Article art = new Article();
+		int idArticle=0;
+		switch(opt){
+		case(1):
+			idArticle = leer.entero("Introduce the id of the article\n" + art.getArticlesNotReviewed().toString());
+		break;
+		case(2):
+			idArticle = leer.entero("Introduce the id of the article\n" + art.getAllArticles().toString());
+		break;
+		}
+		String reviewer_mail = leer.cadena("Introduce the email of the reviewer\n" + p.get_Reviewer_list().toString());
+		art = new Article(idArticle);
+		ArticleReview art_rev = new ArticleReview(art.getId(), reviewer_mail, "", "2000-02-02", "Assigned", -1);
+		if(p.send_review(art_rev)==1)
+			System.out.println("Review sent to " + art_rev.getReviewer_mail() + "\n");
+		else
+			System.out.println("Something went wrong\n");
+	}
+	
+	
+	private static void show_menu() {
+			
+		/*
+		 * Se muestran aquí todas las opciones
+		 */
+		System.out.println("\n");
+		System.out.println("== Menú de Publisher ==");
+		System.out.println("=====================\n");
+		System.out.println("(1) Search Reviewers");
+		System.out.println("(2) View Reviewers List");
+		System.out.println("(3) Add Reviewer");
+		System.out.println("(4) Delete Reviewer");
+		System.out.println("(5) Get Review from");
+		//...
+		System.out.println("(0) Exit"); 
+		
+	}
+
+
+	protected static void showQuery(ResultSet rs) throws SQLException {
+		
+		/*
+		 * Muestra la consulta tal cual, atributo por atributo
+		 * Requiere resultset
+		 */
+	
+			
+		System.out.println("------------------------\n");
+	
+		while (rs.next()) {
+			System.out.println(rs.getString("email"));
+			System.out.println();
+		}
+		rs.close();
+	
+		System.out.println("------------------------");
+		System.out.flush();
+	}
+
+
+}

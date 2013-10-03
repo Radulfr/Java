@@ -1,0 +1,125 @@
+body { 
+	font:8pt verdana; 
+	background:#CCCCCC; 
+	body:80%;
+	padding-left:10%;
+	padding-right:10%;
+
+}
+
+h2 {
+
+	font:28pt verdana, arial, sans-serif;
+	color:#6666FF;
+	margin:0;
+	padding:10px;
+}
+
+h1 {
+
+	font:14pt verdana, arial, sans-serif;
+	color:#164677;
+	padding:10px;
+	margin:0;
+
+
+}
+h3
+{
+	font:10pt verdana, arial, sans-serif;
+	color:#164677;
+	padding:10px;
+	margin:0;
+	margin-left:0;
+}
+h4
+{
+	font:10pt verdana, arial, sans-serif;
+	color:#000000;
+	padding:5px;
+	margin:0;
+	font-weight: bold;
+	
+}
+h5
+{
+	font:8pt verdana, arial, sans-serif;
+	color:#666;
+	padding:4px;
+	
+}
+hr {border: 0; border-top: 1px solid #999; border-bottom: 1px solid #333; height:0;}
+
+a:link, a:visited, a:active {
+
+color:#164677;
+font:bold 8pt verdana, arial, sans-serif;
+text-decoration:none;
+
+}
+
+
+
+a:hover {
+
+	color:#aaee77;
+	font:bold 8pt verdana, arial, sans-serif;
+	text-decoration:underline;
+}
+
+
+p { 
+	font: 8pt verdana, arial, sans-serif; 
+	margin: 0px; 
+	
+}
+
+ul li
+{
+	color:#164677;
+}
+table {
+  border-collapse: collapse;
+  border: 1px solid #666666;
+  font: normal 11px verdana, arial, helvetica, sans-serif;
+  color: #363636;
+  background: #f6f6f6;
+  text-align:left;
+  }
+caption {
+  text-align: center;
+  font: bold 16px arial, helvetica, sans-serif;
+  background: transparent;
+  padding:6px 4px 8px 0px;
+  color: #CC00FF;
+  text-transform: uppercase;
+}
+thead, tfoot {
+background:url(bg1.png) repeat-x;
+text-align:left;
+height:30px;
+}
+thead th, tfoot th {
+padding:5px;
+}
+table a {
+color: #333333;
+text-decoration:none;
+}
+table a:hover {
+text-decoration:underline;
+}
+tr.odd {
+background: #f1f1f1;
+}
+tbody th, tbody td {
+padding:5px;
+}
+
+
+.Grid
+{
+	text-align:center;
+	min-width:450px;
+}
+

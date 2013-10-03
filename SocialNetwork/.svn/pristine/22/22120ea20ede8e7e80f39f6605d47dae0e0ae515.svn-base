@@ -1,0 +1,222 @@
+package Persistence;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import Dominion.Author;
+
+import com.mysql.jdbc.PreparedStatement;
+
+public class AuthorDAO extends CrudDAO<Author>{
+
+    @Override
+    public void create(Author autor) throws SQLException {
+    	
+    	Broker bk; 
+    	Conexion cn = null; 
+    	PreparedStatement stmt;
+     	try{
+     		bk = Broker.get(); 
+     		cn = bk.getBD();
+     		
+     		stmt = (PreparedStatement) cn.prepareStatement("INSERT INTO User " +
+     				"(email, name, second_name, birth_date, city, pass, rol) VALUES " +
+     				"(?, ?, ?, ?, ?, ?, ?)");
+     		stmt.setString(1, autor.getEmail());
+     		stmt.setString(2, autor.getName());
+     		stmt.setString(3, autor.getSecond_name());
+     		stmt.setString(4, autor.getBirth_date());
+     		stmt.setString(5, autor.getCity());
+     		stmt.setString(6, autor.getPassword());
+     		stmt.setString(7, autor.getRol());
+	        stmt.executeUpdate();
+	        
+	        stmt = (PreparedStatement) cn.prepareStatement("INSERT INTO Author (email,karma) VALUES (?,?)");
+     		stmt.setString(1, autor.getEmail());
+     		stmt.setInt(2, autor.getKarma());
+	        stmt.executeUpdate();
+     	}catch (Exception e) {
+			e.printStackTrace();
+		}
+     	finally{
+     		cn.close();     		
+     	}
+    }
+
+    @Override
+    public void delete(Author autor) throws SQLException {
+    	Broker bk; 
+    	Conexion cn=null; 
+    	PreparedStatement stmt;
+     	try{
+     		bk = Broker.get(); 
+     		cn = bk.getBD();
+     		stmt = (PreparedStatement) cn.prepareStatement("DELETE FROM Author WHERE email = ?");
+     		stmt.setString(1, autor.getEmail());
+     		stmt.executeUpdate();
+     		
+     		stmt = (PreparedStatement) cn.prepareStatement("DELETE FROM User WHERE email = ?");
+     		stmt.setString(1, autor.getEmail());
+     		stmt.executeUpdate();
+     		
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 		}
+     	finally{
+     		cn.close();
+     	}
+    }
+
+    @Override
+    public Author read(Author autor) throws SQLException {
+    	Broker bk; 
+    	Conexion cn=null; 
+    	PreparedStatement stmt;
+    	ResultSet rs = null;
+     	try{
+     		bk = Broker.get(); 
+     		cn = bk.getBD();
+     		stmt = (PreparedStatement) cn.prepareStatement("SELECT * FROM Author WHERE email = ?");
+     		stmt.setString(1, autor.getEmail());
+     		rs = stmt.executeQuery();
+     	}catch(Exception e){
+     		e.printStackTrace();
+     	}
+     	finally{
+     		cn.close();
+     	}
+     	
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                    autor.setKarma(rs.getInt("karma"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } 
+        rs.close();
+        
+        ResultSet rs2 = null;
+        try{
+        	bk = Broker.get(); 
+     		cn = bk.getBD();
+     		stmt = (PreparedStatement) cn.prepareStatement("SELECT * FROM User WHERE email=?");
+     		stmt.setString(1, autor.getEmail());
+     		rs2 = stmt.executeQuery();
+        }catch(Exception e){
+        	e.printStackTrace();
+        }
+        finally{
+        	cn.close();
+        }
+        if (rs2 != null) {
+            try {
+                while (rs2.next()) {
+                    autor.setName(rs2.getString("name"));
+                    autor.setSecond_name(rs2.getString("second_name"));
+                    autor.setBirth_date(rs2.getString("birth_date"));
+                    autor.setCity(rs2.getString("city"));
+                    autor.setPassword(rs2.getString("pass"));
+					autor.setRol(rs2.getString("rol"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs2.close();
+        return autor;
+    }
+
+    @Override
+    public void update(Author autor) throws SQLException {
+    	Broker bk; 
+    	Conexion cn=null; 
+    	PreparedStatement stmt;
+    	
+     	try{
+     		bk = Broker.get(); 
+     		cn = bk.getBD();
+     		stmt = (PreparedStatement) cn.prepareStatement("UPDATE Author SET karma=? WHERE email=?");
+     		stmt.setInt(1, autor.getKarma());
+     		stmt.setString(2, autor.getEmail());
+     		stmt.executeUpdate();
+     		
+     		stmt = (PreparedStatement) cn.prepareStatement("UPDATE User SET name=?, second_name=?, " +
+     				"birth_date=?, city=?, pass=?, rol=? WHERE email=?");
+     		stmt.setString(1, autor.getName());
+     		stmt.setString(2, autor.getSecond_name());
+     		stmt.setString(3, autor.getBirth_date());
+     		stmt.setString(4, autor.getCity());
+     		stmt.setString(5, autor.getPassword());
+     		stmt.setString(6, autor.getRol());
+     		stmt.setString(7, autor.getEmail());
+     		stmt.executeUpdate();
+     		
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+     	finally{
+     		cn.close();
+     	}
+    }
+
+	@Override
+	public LinkedList<Author> readAll(Author obj) throws SQLException {
+		
+		Broker bk; 
+    	Conexion cn=null; 
+    	PreparedStatement stmt;
+    	ResultSet rs = null;
+     	try{
+     		bk = Broker.get(); 
+     		cn = bk.getBD();
+     		stmt = (PreparedStatement) cn.prepareStatement("SELECT * FROM Author");
+     		rs = stmt.executeQuery();
+     	}catch(Exception e){
+     		e.printStackTrace();
+     	}finally{
+     		cn.close();
+     	}     		
+     		
+   		LinkedList<Author> listAut = new LinkedList<Author>();
+
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                	Author a = new Author();
+                    a.setEmail(rs.getString("email"));
+                    a.setKarma(rs.getInt("karma"));
+                    bk = Broker.get(); 
+             		cn = bk.getBD();
+             		stmt = (PreparedStatement) cn.prepareStatement("SELECT * FROM User WHERE email=?");
+             		stmt.setString(1, a.getEmail());
+                    ResultSet rs2 = stmt.executeQuery();
+                    if (rs2 != null) {
+                        try {
+                            while (rs2.next()) {
+                                a.setName(rs2.getString("name"));
+                                a.setSecond_name(rs2.getString("second_name"));
+                                a.setBirth_date(rs2.getString("birth_date"));
+                                a.setCity(rs2.getString("city"));
+                                a.setPassword(rs2.getString("pass"));
+            					a.setRol(rs2.getString("rol"));
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    rs2.close();
+					listAut.add(a);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }finally{
+            	cn.close();
+            }
+        }
+        rs.close();
+        return listAut;
+	}
+}

@@ -1,0 +1,13 @@
+package Persistence;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+
+
+
+public interface ArticleReviewDAO {
+	public ResultSet get_articleReview(int idArticle, String reviewerMail) throws SQLException;
+	public int set_ar_comment(int idArticle, String reviewer_mail, String comment) throws SQLException;
+	public int set_ar_Mark(int idArticle, String reviewer_mail, int mark) throws SQLException;
+	
+}

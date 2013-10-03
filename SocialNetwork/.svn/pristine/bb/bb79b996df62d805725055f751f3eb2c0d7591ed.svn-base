@@ -1,0 +1,71 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+ <%@taglib uri="/struts-tags" prefix="s" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>My friends</title>
+</head>
+<script language="JavaScript">
+	function add(friendid) {
+		document.getElementById("tbadd").value=friendid;
+	}
+</script>
+<script language="JavaScript">
+	function addTag(friendid) {
+		document.getElementById("tbadd").value=friendid;
+	}
+</script>
+<body>
+<h2>My friends</h2>
+<hr>
+<jsp:include page="header.jspf"></jsp:include>
+
+<hr>
+<h4>View my friends</h4>
+<s:form action="amigos">
+				
+	<s:submit value="View my friends"></s:submit>
+	<table border="1">
+		<s:iterator value="friendlist" status="itStatus">
+			<tr><td><s:property value="getFollowed_mail().toString()" /></td></tr>
+		</s:iterator>
+	</table>
+</s:form>
+
+<hr>
+<h4>Search friends</h4>
+<h5>ID</h5>
+	<s:form action="buscarusu">
+		<s:textfield name="name" label="Search for ID" />
+		<s:submit value="Search" ></s:submit>
+
+		<s:if test="found==true">
+				<h3>Found:</h3>	 <p><s:property value="userfound" /> - <a href="javascript:add('<s:property value="userfound" />')">Add friend</a></p>
+		</s:if>
+	</s:form>
+<h5>TAG</h5>
+	<s:form action="buscarusutag">
+		<s:textfield name="tag" label="Search for TAG" />
+		<s:submit value="Search" ></s:submit>
+
+		<s:if test="foundtag==true">
+			<h3>Found:</h3>	 	
+			<table border="1">
+				<s:iterator value="friendlisttag" status="itStatus">
+					<tr><td><s:property value="toString()" /> - <a href="javascript:addTag('<s:property value="toString()" />')">Add friend</a></td></tr>
+				</s:iterator>
+			</table> 
+		</s:if>
+	</s:form>
+	
+	<hr>
+	<h4>Add a friend</h4>
+	<s:form action="addfriend">
+		<s:textfield id="tbadd" name="newfriend" label="ID" />
+		<s:submit value="Add" ></s:submit>
+	</s:form>
+
+</body>
+</html>

@@ -1,0 +1,127 @@
+package Persistence;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import Dominion.*;
+
+public class AuthorDAO extends CrudDAO<Author>{
+
+    @Override
+    public void create(Author autor) {
+        String sqlQuerry = "INSERT INTO Author (email,karma) VALUES ('"
+        		+autor.getEmail()+"',"+autor.getKarma()+")";
+        String sqlQuerry2 = "INSERT INTO User (email, name, second_name, birth_date, city, pass, rol) VALUES ('"
+        		+autor.getEmail()+"','"+autor.getName()+"','"+autor.getSecond_name()+"','"
+        		+autor.getBirth_date()+"','"+autor.getCity()+"','"
+        		+autor.getPassword()+"','A')";
+        try {
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry2);
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    }
+
+    @Override
+    public void delete(Author autor) {
+    	 try {
+ 			AgenteBD.getDbCon().queryUpdate("DELETE FROM Author WHERE email='"+ autor.getEmail() +"'");
+ 			AgenteBD.getDbCon().queryUpdate("DELETE FROM User WHERE email='"+autor.getEmail()+"'");
+ 		} catch (SQLException e) {
+ 			e.printStackTrace();
+ 		}
+    }
+
+    @Override
+    public Author read(Author autor) throws SQLException {
+      ResultSet rs = AgenteBD.getDbCon().query(
+                "SELECT * FROM Author WHERE email='" + autor.getEmail()+ "'");
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                    autor.setKarma(rs.getInt("karma"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } 
+        rs.close();
+    	ResultSet rs2 = AgenteBD.getDbCon().query("SELECT * FROM User WHERE email='" + autor.getEmail()+"'");
+        if (rs2 != null) {
+            try {
+                while (rs2.next()) {
+                    autor.setName(rs2.getString("name"));
+                    autor.setSecond_name(rs2.getString("second_name"));
+                    autor.setBirth_date(rs2.getString("birth_date"));
+                    autor.setCity(rs2.getString("city"));
+                    autor.setPassword(rs2.getString("pass"));
+					autor.setRol(rs2.getString("rol"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs2.close();
+        return autor;
+    }
+
+    @Override
+    public void update(Author autor) {
+    	 String sqlQuerry="UPDATE Author SET karma=" + autor.getKarma()
+		         + " WHERE email='" + autor.getEmail()+ "'";
+    	 String sqlQuerry2="UPDATE User SET name='"+autor.getName()
+		         +"', second_name='" + autor.getSecond_name()
+		         +"', birth_date='" +autor.getBirth_date()
+		         +"', city='"+autor.getCity()
+		         +"', pass='"+ autor.getPassword()
+		         +"', rol='"+autor.getRol()
+		         + "' WHERE email='" + autor.getEmail()+ "'";
+		try {
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry2);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}       
+    }
+
+	@Override
+	public LinkedList<Author> readAll(Author obj) throws SQLException {
+		ResultSet rs = AgenteBD.getDbCon().query("SELECT * FROM Author");
+    	LinkedList<Author> listAut = new LinkedList<Author>();
+    	String consult;
+    	ResultSet rs2;
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                	Author a = new Author();
+                    a.setEmail(rs.getString("email"));
+                    a.setKarma(rs.getInt("karma"));
+                    consult =  "SELECT * FROM User WHERE email='" + a.getEmail()+"'";
+                    rs2 = AgenteBD.getDbCon().query(consult);
+                    if (rs2 != null) {
+                        try {
+                            while (rs2.next()) {
+                                a.setName(rs2.getString("name"));
+                                a.setSecond_name(rs2.getString("second_name"));
+                                a.setBirth_date(rs2.getString("birth_date"));
+                                a.setCity(rs2.getString("city"));
+                                a.setPassword(rs2.getString("pass"));
+            					a.setRol(rs2.getString("rol"));
+                            }
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    rs2.close();
+					listAut.add(a);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        return listAut;
+	}
+}

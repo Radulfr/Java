@@ -1,0 +1,124 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<%@taglib uri="/struts-tags" prefix="s" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Welcome</title>
+<link rel="stylesheet" href="Style.css" type="text/css" />
+</head>
+<script language="JavaScript">
+	function getReview(reviewer) {
+		document.getElementById("reviewer").value=reviewer;
+	}
+</script>
+<script language="JavaScript">
+	function deleteReviewer(revi) {
+		document.getElementById("drevi").value=revi;
+	}
+</script>
+<script language="JavaScript">
+	function getRevission(articleid, reviewer) {
+		document.getElementById("article").value=articleid;
+		document.getElementById("revarticle").value=reviewer;
+	}
+</script>
+<script language="JavaScript">
+	function add(friendid) {
+		document.getElementById("tbadd").value=friendid;
+	}
+</script>
+<body>
+<s:if test="#session.loggedin != 'true'">
+            <jsp:forward page="/index.jsp" />
+        </s:if>
+<h1>Publisher: <s:property value="#session.user.getName()" /> <s:property value="#session.user.getSecond_name()" /></h1>
+<hr>
+
+<h4>Notifications: <s:property value="notifications" /> </h4>
+<hr>
+<jsp:include page="header.jspf"></jsp:include>
+<hr>
+<h4>List of Reviewers</h4>
+
+<s:form action="getreviewers">
+	<s:submit value="Get list"></s:submit>
+	
+		<table border="1">
+			<s:iterator value="revlist" status="itStatus">
+				<tr><td><s:property value="toString()" /></td><td><a href="javascript:getReview('<s:property value="toString()" />')">Get Reviews</a></td><td><a href="javascript:deleteReviewer('<s:property value="toString()" />')">Delete Reviewer</a></td></tr>
+			</s:iterator>
+		</table>
+
+</s:form>
+
+<hr>
+<h4>Get reviews</h4>
+
+<s:form action="getrevision">
+	<s:textfield name="rev" id="reviewer" label="Reviewer" />
+	<s:submit value="Get reviews"></s:submit>
+	<br />
+	<s:if test="results==true">
+	<table border="1">
+	<tr><td><b>Article Id</b></td><td><b>State</b></td><td><b>Reviewer</b></td><td><b>Comment</b></td><td><b>Date</b></td><td><b>Mark</b></td><td><b>Link</b></td></tr>
+			<s:iterator value="revs" status="itStatus">
+				<tr><td><s:property value="getIdArticle()" /></td><td><s:property value="getState_review()" /></td><td><s:property value="getReviewer_mail()" /></td><td><s:property value="getComment()" /></td><td><s:property value="getReview_date()" /></td><td><s:property value="getMark()" /></td><td><a href="javascript:getRevission('<s:property value="getIdArticle()" />', '<s:property value="getReviewer_mail()" />')">Get Review</a></td></tr>
+			</s:iterator>
+		</table>
+	</s:if>
+</s:form>
+<br />
+<s:form >
+	<s:textfield id="article" name="articleid" label="Article ID" />
+	<s:textfield id="revarticle" name="reviewerid" label="Reviewer ID" />
+	<s:submit disabled="true" value="Submit" />
+</s:form>
+
+<hr>
+<h4>Manage List</h4>
+<table border="1">
+<tr>
+<td>
+<h5>Delete Reviewer</h5>
+<s:form action="delreviewer">
+	<s:textfield name="revdel" id="drevi" label="Deleting" />
+	<s:submit value="Delete"></s:submit>
+</s:form>
+
+<h5>Add Reviewer</h5>
+<s:form action="addreviewer">
+	<s:textfield name="addreviewer" id="tbadd" label="Reviewer's ID" />
+	<s:submit value="Add"></s:submit>
+</s:form>
+</td>
+<td>
+<s:form action="publisearchid">
+<h5>Search Reviewer by ID</h5>
+<s:textfield name="searchid" label="Looking for ID" />
+<s:submit value="Search" />
+</s:form>
+<s:form action="publisearchtag">
+<h5>Search Reviewer by TAG</h5>
+<s:textfield name="tag" label="Looking for TAG" />
+<s:submit value="Search" />
+</s:form>
+</td>
+<td>
+<h4>Found:</h4>	 
+	<s:if test="found==true">
+		<p><s:property value="userfound" /> - <a href="javascript:add('<s:property value="userfound" />')">Add Reviewer</a></p>
+	</s:if>	
+	<s:if test="foundtag==true">
+	<ul>
+			<s:iterator value="friendlisttag" status="itStatus">
+				<li><s:property value="toString()" /> - <a href="javascript:add('<s:property value="toString()" />')">Add Reviewer</a>   </li>
+			</s:iterator>
+	</ul>			
+	</s:if>
+</td>
+</tr>
+</table>
+</body>
+</html>

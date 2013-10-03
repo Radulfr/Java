@@ -1,0 +1,15 @@
+package OldPersistence;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+/*
+ * Incluye todas las interfaces de todo el código menos los métodos típicos singleton
+ * para ser definidos
+ */
+public abstract class AgentFactory implements ArticleDAO, AuthorDAO, NotificationDAO, PublisherDAO, ReviewerDAO, UserDAO, SistemaDAO, ArticleReviewDAO {
+	 public abstract ResultSet query(String query) throws SQLException;
+	 public abstract int insert(String insertQuery) throws SQLException;
+	 
+}
+

@@ -1,0 +1,31 @@
+package Persistence;
+
+import java.sql.SQLException;
+
+import utilidades.leer;
+import Dominion.Article;
+
+public class PruebasDAORRC {
+	public static void main (String[] args) throws SQLException{
+
+		CrudDAO<Article> c = new ArticleDAO();
+		Article a = new Article(); 
+		a.setBody("PRUEBABODY"); 
+		a.setComment_author("PRUEBACOMMENT"); 
+		a.setId_author("1@autor.com"); 
+		a.setMark(7);
+		a.setPublishing_date(leer.fecha()); 
+		a.setState("unread"); 
+		a.setTitle("PRUEBATITLE"); 
+		
+		//c.create(a);
+		a.setId(0); 
+		a=c.read(a); 
+		a.setMark(8);
+		
+		c.update(a); 
+		
+		System.out.println("Done " + a.toString()); 
+		c.delete(a); 
+	}
+}

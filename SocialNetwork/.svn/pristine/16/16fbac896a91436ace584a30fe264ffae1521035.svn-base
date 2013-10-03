@@ -1,0 +1,23 @@
+package Persistence;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import Dominion.Message;
+import Dominion.Notification;
+import Dominion.User;
+
+public interface UserDAO {
+	public int update_user(User u) throws Exception;
+	public ResultSet get_contacts(User u) throws SQLException;
+	public int send_message(Message m) throws SQLException;
+	public int add_contact(User user, User u) throws SQLException;
+	public ResultSet log(String login, String password) throws Exception;
+	public ResultSet search_user(String e_mail) throws SQLException;
+	public ResultSet search_tag(String tag) throws SQLException;
+	public ResultSet get_notifications(User user) throws SQLException;
+	public int update_notification(Notification n, User u) throws SQLException;
+	public ResultSet get_user_messages(User user) throws SQLException;
+
+	
+}

@@ -1,0 +1,96 @@
+package Persistence;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import Dominion.*;
+
+public class UserDAO extends CrudDAO<User>{
+
+    @Override
+    public void create(User usuario) {
+        String sqlQuerry = "INSERT INTO User (email, name, second_name, birth_date, city, pass, rol) VALUES ('"
+        		+usuario.getEmail()+"','"+usuario.getName()+"','"+usuario.getSecond_name()+"','"
+        		+usuario.getBirth_date()+"','"+usuario.getCity()+"','"
+        		+usuario.getPassword()+"','"+usuario.getRol()+"')";
+        try {
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    }
+
+    @Override
+    public void delete(User usuario) {
+    	 try {
+ 			AgenteBD.getDbCon().queryUpdate("DELETE FROM User WHERE email='"+usuario.getEmail()+"'");
+ 		} catch (SQLException e) {
+ 			e.printStackTrace();
+ 		}
+    }
+
+    @Override
+    public User read(User usuario) throws SQLException {
+    	String consult =  "SELECT * FROM User WHERE email='" + usuario.getEmail()+"'";
+    	if (usuario.getPassword()!=null) consult="SELECT * FROM User WHERE email='" + usuario.getEmail()+ "' AND pass='"+usuario.getPassword()+"'";
+    	ResultSet rs = AgenteBD.getDbCon().query(consult);
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                    usuario.setName(rs.getString("name"));
+                    usuario.setSecond_name(rs.getString("second_name"));
+                    usuario.setBirth_date(rs.getString("birth_date"));
+                    usuario.setCity(rs.getString("city"));
+                    usuario.setPassword(rs.getString("pass"));
+					usuario.setRol(rs.getString("rol"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        return usuario;
+    }
+
+    @Override
+    public void update(User usuario) {
+    	 String sqlQuerry="UPDATE User SET name='"+usuario.getName()
+		         +"', second_name='" + usuario.getSecond_name()
+		         +"', birth_date='" +usuario.getBirth_date()
+		         +"', city='"+usuario.getCity()
+		         +"', pass='"+ usuario.getPassword()
+		         +"', rol='"+usuario.getRol()
+		         + "' WHERE email='" + usuario.getEmail()+ "'";
+		try {
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}       
+    }
+
+	@Override
+	public LinkedList<User> readAll(User usuario) throws SQLException {
+		ResultSet rs = AgenteBD.getDbCon().query("SELECT * FROM User WHERE rol='"+usuario.getRol()+"'");
+    	LinkedList<User> listUser = new LinkedList<User>();
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                	User u = new User();
+                	u.setEmail(rs.getString("email"));
+                    u.setName(rs.getString("name"));
+                    u.setSecond_name(rs.getString("second_name"));
+                    u.setBirth_date(rs.getString("birth_date"));
+                    u.setCity(rs.getString("city"));
+                    u.setPassword(rs.getString("pass"));
+					u.setRol(rs.getString("rol"));
+					listUser.add(u);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        return listUser;
+	}
+}

@@ -1,0 +1,10 @@
+package Persistence;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+
+
+public interface ArticleDAO {
+	public ResultSet get_articles_with_state(String state)throws SQLException;
+	public ResultSet get_article_by_id(int id) throws SQLException;
+}

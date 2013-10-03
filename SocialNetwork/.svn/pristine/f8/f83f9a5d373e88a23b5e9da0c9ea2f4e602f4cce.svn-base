@@ -1,0 +1,42 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<%@taglib uri="/struts-tags" prefix="s" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Put Marks</title>
+</head>
+
+<body>
+
+<hr>
+	<jsp:include page="header.jspf"></jsp:include>
+<hr>
+
+<h3>Put Marks</h3>
+			<s:form>
+			<table border="1">
+				<tr>
+					<td>Criterio</td>
+					<td align="center">Nota(0-10)</td>
+				</tr>
+				<tr>
+					<s:textfield id="idEstruct" name="idEstruct" label="Estructuracion"/>
+					<s:textfield id="idExp" name="idExp" label="Expresion"/>
+					<s:textfield id="idVoc" name="idVoc" label="Vocabulario"/>
+					<s:textfield id="idOr" name="idOr" label="Originalidad" />
+					<s:textfield id="idExpect" name="idExpect" label="Expectativas" />
+					<s:textfield id="idOtros" name="idOtros" label="Otros"/>
+				
+				</tr>
+			</table>
+			
+			<br>
+			<s:textfield id="idGlobal" name="idGlobal" label="Nota global"/>
+			<s:submit value="Calcular" align="left"></s:submit>
+			</s:form>	
+			
+		
+</body>
+</html>

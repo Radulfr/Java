@@ -1,0 +1,793 @@
+package Persistence;
+
+import Dominion.*;
+
+import java.sql.*;
+
+/**
+ * @desc A singleton database access class for MySQL
+ * @author B&D
+ */
+public final class Agent extends AgentFactory {
+	public Connection conn;
+	private Statement statement;
+	public static Agent db;
+
+	private Agent() {
+		// Change data here
+		// String url= "jdbc:mysql://192.168.1.248/";
+		// String dbName = "ISOII";
+		// String driver = "com.mysql.jdbc.Driver";
+		// String userName = "root";
+		// String password = "toor";
+
+		/* configuración RRC */
+		String url = "jdbc:mysql://localhost/";
+		String dbName = "ISOII";
+		String driver = "com.mysql.jdbc.Driver";
+		String userName = "root";
+		String password = "";
+
+		try {
+			Class.forName(driver).newInstance();
+			this.conn = (Connection) DriverManager.getConnection(url + dbName,
+					userName, password);
+		} catch (Exception sqle) {
+			sqle.printStackTrace();
+		}
+	}
+
+	/**
+	 * 
+	 * @return MysqlConnect Database connection object
+	 */
+	public static synchronized Agent getDbCon() {
+		if (db == null) {
+			db = new Agent();
+		}
+		return db;
+
+	}
+
+	/**
+	 * 
+	 * @param query
+	 *            String The query to be executed
+	 * @return a ResultSet object containing the results or null if not
+	 *         available
+	 * @throws SQLException
+	 */
+	public ResultSet query(String query) throws SQLException {
+		statement = db.conn.createStatement();
+		ResultSet res = statement.executeQuery(query);
+		return res;
+	}
+
+	/**
+	 * @desc Method to insert data to a table
+	 * @param insertQuery
+	 *            String The Insert query
+	 * @return boolean
+	 * @throws SQLException
+	 */
+	public int insert(String insertQuery) throws SQLException {
+		statement = db.conn.createStatement();
+		int result = statement.executeUpdate(insertQuery);
+		return result;
+
+	}
+
+	public ResultSet log(String email, String password) throws SQLException {
+		PreparedStatement stmt = null;
+		ResultSet res;
+		/*
+		 * La consulta segura se hace con prepareStatement de la siguiente
+		 * manera
+		 */
+
+		stmt = conn
+				.prepareStatement("Select * from User where  email=? and  pass=?");
+		stmt.setString(1, email);
+		stmt.setString(2, password);
+		res = stmt.executeQuery();
+
+		return res;
+	}
+
+	public int update_user(User u) throws SQLException {
+		/*
+		 * Actualiza los datos de un usuario a través del objeto
+		 */
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("UPDATE User SET name=?, second_name=?, birth_date=?, city=?, pass=?"
+						+ " WHERE email=?");
+		stmt.setString(1, u.getName());
+		stmt.setString(2, u.getSecondName());
+		stmt.setString(3, u.getBirthDate());
+		stmt.setString(4, u.getCity());
+		stmt.setString(5, u.getPassword());
+		stmt.setString(6, u.getEmail());
+
+		return stmt.executeUpdate();
+	}
+
+	public ResultSet get_contacts(User u) throws SQLException {
+		ResultSet r = null;
+
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("SELECT followed_mail FROM Follows WHERE follower_mail=?");
+		// Esta consulta ya la complicaremos como queramos, de tal manera que el
+		// resultset no sólo devuelva emails
+		// sino también nombres, karmapoints, etc, etc.
+		stmt.setString(1, u.getEmail());
+		r = stmt.executeQuery();
+		return r;
+	}
+
+	public int send_message(Message m) throws SQLException {
+		PreparedStatement stmt = null;
+		// Se recuperan los datos del objeto
+		stmt = conn
+				.prepareStatement("INSERT INTO Message (mail_from, mail_to, body, send_date) VALUES (?,?,?,?)");
+		stmt.setString(1, m.getEmail_from());
+		stmt.setString(2, m.getEmail_to());
+		stmt.setString(3, m.getBody());
+		stmt.setString(4, m.getDate());
+		// Se actualiza
+		return stmt.executeUpdate();
+	}
+
+	public int send_publication(Article art) throws SQLException {
+		PreparedStatement stmt = null;
+		// A partir del objeto Article introducimos los datos a la Base de datos
+		stmt = conn
+				.prepareStatement("INSERT INTO Article (title, publishing_date, idAuthor, commentAuthor, state, mark, body) VALUES(?,?,?,?,?,?,?)");
+		stmt.setString(1, art.getTitle());
+		stmt.setString(2, art.getPublishing_date());
+		stmt.setString(3, art.getId_author());
+		stmt.setString(4, art.getComment_author());
+		stmt.setString(5, art.getState());
+		stmt.setInt(6, art.getMark());
+		stmt.setString(7, art.getBody());
+
+		return stmt.executeUpdate();
+	}
+
+	public ResultSet get_unresolved_publications(Reviewer r)
+			throws SQLException {
+		// Devuelve las publicaciones asociadas a un revisor con un estado
+		// determinado
+		PreparedStatement stmt = null;
+		/*
+		 * Estados de una revisión: resolved halfreviewed unresolved
+		 */
+		stmt = conn
+				.prepareStatement("SELECT * FROM ArticleReview WHERE reviewer_mail=? AND state_review <> 'reviewed' AND state_review <> 'Cancelled'");
+		stmt.setString(1, r.getEmail());
+
+		return stmt.executeQuery();
+	}
+
+	public ResultSet get_resolved_publications(Reviewer r) throws SQLException {
+		// Devuelve las publicaciones asociadas a un revisor con un estado
+		// determinado
+		PreparedStatement stmt = null;
+		/*
+		 * Estados de una revisión: resolved halfreviewed unresolved
+		 */
+		stmt = conn
+				.prepareStatement("SELECT * FROM ArticleReview WHERE reviewer_mail=? AND state_review = 'reviewed' ");
+		stmt.setString(1, r.getEmail());
+
+		return stmt.executeQuery();
+	}
+
+	public int set_comment_reviewer(Reviewer r, int idArt, String comment)
+			throws SQLException {
+		// Cambia el comentario del revisor respecto a un articulo
+		java.util.Date today = new java.util.Date();
+		Date date = new Date(today.getTime());
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("UPDATE ArticleReview SET comment=?, review_date=? WHERE reviewer_mail=? and idArticle=?");
+		stmt.setString(1, comment);
+		stmt.setDate(2, date);
+		stmt.setString(3, r.getEmail());
+		stmt.setInt(4, idArt);
+
+		return stmt.executeUpdate();
+	}
+
+	public int asses_articlereview(Article a, String newstate, Reviewer r,
+			int mark_rev) throws SQLException {
+		// Cambia la puntuacion del revisor respecto a un articulo
+		PreparedStatement stmt2 = null;
+		// La media se calcula automáticamente a partir de los ArtilceReview con Agent.getAvMarkOfPublication(idArticle)
+		// PreparedStatement stmt1 = null;
+		// stmt1 =
+		// conn.prepareStatement("UPDATE Article SET mark=?, state=? WHERE idArticle=?");
+		// stmt1.setInt(1, a.getMark());
+		// stmt1.setString(2, newstate);
+		// stmt1.setInt(3, a.getId());
+
+		stmt2 = conn.prepareStatement("UPDATE ArticleReview SET mark=?, state_review='reviewed' WHERE idArticle=? AND reviewer_mail=?");
+		stmt2.setInt(1, mark_rev);
+		stmt2.setInt(2, a.getId());
+		stmt2.setString(3, r.getEmail());
+
+//		return (stmt1.executeUpdate() + stmt2.executeUpdate());
+		return stmt2.executeUpdate();
+	}
+
+	public ResultSet get_publicationsAuthor(Author a) throws SQLException {
+		ResultSet r = null;
+
+		PreparedStatement stmt = null;
+		stmt = conn.prepareStatement("SELECT * FROM Article WHERE idAuthor=?");
+		// Esta consulta ya la complicaremos como queramos, de tal manera que el
+		// resultset no sólo devuelva emails
+		// sino también nombres, karmapoints, etc, etc.
+		stmt.setString(1, a.getEmail());
+		r = stmt.executeQuery();
+		return r;
+	}
+
+	public int setCommentInArticle(String id, String comment)
+			throws SQLException {
+		PreparedStatement stmt = null;
+		// A partir del objeto Article introducimos los datos a la Base de datos
+		stmt = conn
+				.prepareStatement("Update Article set commentAuthor=? where idArticle=?");
+		stmt.setString(1, comment);
+		stmt.setString(2, id);
+
+		return stmt.executeUpdate();
+	}
+
+	public int CancelReview(String id) throws SQLException {
+		PreparedStatement stmt = null, stmt2 = null;
+		// A partir del objeto Article introducimos los datos a la Base de datos
+		// stmt =
+		// conn.prepareStatement("Delete from Article where idArticle=?");
+		stmt = conn
+				.prepareStatement("UPDATE Article SET state='Cancelled' WHERE idArticle=?");
+		stmt.setString(1, id);
+
+		stmt2 = conn
+				.prepareStatement("UPDATE ArticleReview SET state_review='Cancelled' WHERE idArticle=?");
+		stmt2.setString(1, id);
+
+		return (stmt2.executeUpdate() + stmt.executeUpdate());
+	}
+
+	/**
+	 * @author roske
+	 * @desc Gets a reviewer by its email, if the parameter is empty it returns
+	 *       all reviewers
+	 * @param mail
+	 *            (String)
+	 * @return ResultSet
+	 * @throws SQLException
+	 */
+	public ResultSet get_reviewer_by_mail(String mail) throws SQLException {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		if (mail.equals("")) {
+			stmt = conn.prepareStatement("SELECT email from Reviewer");
+		} else {
+			stmt = conn
+					.prepareStatement("SELECT email from Reviewer WHERE email=?");
+			stmt.setString(1, mail);
+		}
+		r = stmt.executeQuery();
+		return r;
+	}
+
+	/**
+	 * @author roske
+	 * @desc Gets the reviewers list of a publisher
+	 * @param publisher
+	 *            (Publisher)
+	 * @return ResultSet
+	 * @throws SQLException
+	 */
+	public ResultSet get_reviewers(Publisher publisher) throws SQLException {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("SELECT reviewer_mail from PublisherReviewer where publisher_mail=?");
+		stmt.setString(1, publisher.getEmail());
+		r = stmt.executeQuery();
+		return r;
+	}
+
+	/**
+	 * @author roske
+	 * @desc Adds a reviewer to the reviewers list
+	 * @param publisher
+	 *            (Publisher)
+	 * @param mail
+	 *            (String)
+	 * @return 1: success 0: reviewer does not exist
+	 * @throws SQLException
+	 */
+	public int add_publisher_reviewer(Publisher publisher, String mail)
+			throws SQLException {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("SELECT email from Reviewer WHERE email=?");
+		stmt.setString(1, mail);
+		r = stmt.executeQuery();
+		if (r == null)
+			return 0;
+		else {
+			stmt = conn
+					.prepareStatement("INSERT INTO PublisherReviewer (publisher_mail, reviewer_mail) VALUES (?, ?)");
+			stmt.setString(1, publisher.getEmail());
+			stmt.setString(2, mail);
+			return stmt.executeUpdate();
+		}
+	}
+
+	/**
+	 * @author roske
+	 * @desc Deletes a reviewer from the reviewers list
+	 * @param publisher
+	 *            (Publisher)
+	 * @param mail
+	 *            (String)
+	 * @return 1: success 0: reviewer does not exist
+	 * @throws SQLException
+	 */
+	public int delete_publisher_reviewer(Publisher publisher, String mail)
+			throws SQLException {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("SELECT email from Reviewer WHERE email=?");
+		stmt.setString(1, mail);
+		r = stmt.executeQuery();
+		if (r == null)
+			return 0;
+		else {
+			stmt = conn
+					.prepareStatement("DELETE from PublisherReviewer where publisher_mail=? and reviewer_mail=?");
+			stmt.setString(1, publisher.getEmail());
+			stmt.setString(2, mail);
+			return stmt.executeUpdate();
+		}
+	}
+
+	/**
+	 * @author roske
+	 * @desc Gets all articles with an state, if the parameter is empty returns
+	 *       all articles
+	 * @param state
+	 *            (String)
+	 * @return ResultSet
+	 * @throws SQLException
+	 */
+	public ResultSet get_articles_with_state(String state) throws SQLException {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		if (state.equals("")) {
+			stmt = conn.prepareStatement("SELECT * from Article");
+		} else {
+			stmt = conn.prepareStatement("SELECT * from Article WHERE state=?");
+			stmt.setString(1, state);
+		}
+		r = stmt.executeQuery();
+		return r;
+
+	}
+
+	/**
+	 * @author roske
+	 * @desc Finds an article with its id
+	 * @param id
+	 *            (int)
+	 * @return ResultSet
+	 * @throws SQLException
+	 */
+	public ResultSet get_article_by_id(int id) throws SQLException {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		stmt = conn.prepareStatement("SELECT * from Article WHERE idArticle=?");
+		stmt.setInt(1, id);
+		r = stmt.executeQuery();
+		return r;
+	}
+
+	/**
+	 * @author roske
+	 * @desc Adds an article-review
+	 * @param art_rev
+	 *            (ArticleReview)
+	 * @return 1: success
+	 * @throws SQLException
+	 */
+	public int add_article_review(ArticleReview art_rev) throws SQLException {
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("INSERT INTO ArticleReview (idArticle, reviewer_mail, comment, review_date, state_review, mark) VALUES (?, ?, ?, ?, ?, ?)");
+		stmt.setInt(1, art_rev.getIdArticle());
+		stmt.setString(2, art_rev.getReviewer_mail());
+		stmt.setString(3, art_rev.getComment());
+		stmt.setString(4, art_rev.getReview_date());
+		stmt.setString(5, art_rev.getState_review());
+		stmt.setInt(6, art_rev.getMark());
+		return stmt.executeUpdate();
+	}
+
+	public int add_contact(User user, User u) throws SQLException {
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("INSERT INTO Follows (follower_mail, followed_mail) VALUES (?,?)");
+		stmt.setString(1, user.getEmail());
+		stmt.setString(2, u.getEmail());
+		return stmt.executeUpdate();
+	}
+
+	public ResultSet search_user(String e_mail) throws SQLException {
+		// Busca un usuario por e-mail. Devuelve el result set
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		stmt = conn.prepareStatement("SELECT * from User WHERE email=?");
+		stmt.setString(1, e_mail);
+		r = stmt.executeQuery();
+		return r;
+
+	}
+
+	public ResultSet search_tag(String tag) throws SQLException {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("SELECT reviewer_mail from ReviewerTag r, Tag t WHERE t.issue=? AND t.idTag = r.idTag");
+		stmt.setString(1, tag);
+		r = stmt.executeQuery();
+
+		return r;
+	}
+
+	public ResultSet search_Reviewer_byTag(Article art) throws SQLException {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("Select ReviewerTag.reviewer_mail from ReviewerTag where ReviewerTag.idTag = (Select ArticleTag.idTag from ArticleTag where idArticle=?)");
+		stmt.setInt(1, art.getId());
+		r = stmt.executeQuery();
+
+		return r;
+	}
+
+	public int getKarmaOfReviewer(String idReviewer) throws SQLException {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("Select karma from Reviewer where email=?");
+		stmt.setString(1, idReviewer);
+		r = stmt.executeQuery();
+		r.next();
+		return r.getInt("karma");
+
+	}
+	
+	public int getVIPOfReviewer(String idReviewer) throws SQLException {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		stmt = conn.prepareStatement("Select VIP from Reviewer where email=?");
+		stmt.setString(1, idReviewer);
+		r = stmt.executeQuery();
+		r.next();
+		return r.getInt("VIP");
+	}
+
+	public int getKarmaOfAuthor(String idAuthor) throws SQLException {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		stmt = conn.prepareStatement("Select karma from Author where email=?");
+		stmt.setString(1, idAuthor);
+		r = stmt.executeQuery();
+		r.next();
+		return r.getInt("karma");
+
+	}
+
+	public int add_ArticleReviewer(int idArticle, String idReviewer, String date)
+			throws SQLException {
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("INSERT INTO ArticleReview (idArticle, reviewer_mail, comment,review_date,state_review,mark) VALUES (?, ?, 'Empty',?,'unresolved','-1');");
+
+		stmt.setInt(1, idArticle);
+		stmt.setString(2, idReviewer);
+		stmt.setString(3, date);
+		return stmt.executeUpdate();
+	}
+
+	public int add_notification(Notification n) throws SQLException {
+		/* Puts a notification into the DB */
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("INSERT INTO Notification (mail_notified, note, state, notification_date) VALUES (?,?,?,?);");
+		stmt.setString(1, n.getMail_notified());
+		stmt.setString(2, n.getNote());
+		stmt.setString(3, n.getState());
+		stmt.setString(4, n.getDate());
+		return stmt.executeUpdate();
+	}
+
+	public int update_notification(Notification n, User u) throws SQLException {
+		/* Update a notification through an object */
+		// testado
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("UPDATE Notification SET state=? WHERE mail_notified=?");
+		stmt.setString(1, n.getState());
+		stmt.setString(2, u.getEmail());
+		return stmt.executeUpdate();
+	}
+
+	public ResultSet get_notifications(User user) throws SQLException {
+		/* Gets a resultset of notifications of an user */
+		// testado
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("SELECT * from Notification WHERE mail_notified=? AND state='UNREAD'");
+		stmt.setString(1, user.getEmail());
+		r = stmt.executeQuery();
+
+		return r;
+	}
+
+	public ResultSet get_user_messages(User user) throws SQLException {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		stmt = conn.prepareStatement("SELECT * from Message WHERE mail_to=?");
+		stmt.setString(1, user.getEmail());
+		r = stmt.executeQuery();
+
+		return r;
+	}
+
+	/**
+	 * @author roske
+	 * @desk Finds an articleReview by its idArticle and reviewerMail
+	 * @param idArticle
+	 *            (int)
+	 * @param reviewerMail
+	 *            (string)
+	 * @return ResultSet
+	 * @throws SQLException
+	 */
+	public ResultSet get_articleReview(int idArticle, String reviewerMail)
+			throws SQLException {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("SELECT * FROM ArticleReview WHERE idArticle=? AND reviewer_mail=?");
+		stmt.setInt(1, idArticle);
+		stmt.setString(2, reviewerMail);
+		r = stmt.executeQuery();
+		return r;
+	}
+
+	/**
+	 * @author roske
+	 * @desc Sets the mark of a publication
+	 * @param idArticle
+	 *            (int)
+	 * @return 1:success
+	 * @throws SQLException
+	 */
+	public int setAvMarkOfPublication(int idArticle) throws SQLException {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		stmt = conn.prepareStatement("SELECT AVG(mark) FROM ArticleReview WHERE idArticle=? AND mark>='0'");
+		stmt.setInt(1, idArticle);
+		r = stmt.executeQuery();
+
+		r.next();
+		int mark = r.getInt("AVG(mark)");
+		stmt = conn.prepareStatement("UPDATE Article SET mark=? WHERE idArticle=?");
+		stmt.setInt(1, mark);
+		stmt.setInt(2, idArticle);
+
+		stmt.executeUpdate();
+		return mark;
+	}
+
+	public ResultSet getReviewsFromReviewer(String reviewer, Publisher publisher)
+			throws SQLException {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		try {
+
+			stmt = conn
+					.prepareStatement("SELECT * from ArticleReview a, PublisherReviewer p WHERE a.reviewer_mail=? AND a.reviewer_mail = p.reviewer_mail AND p.publisher_mail=?");
+		} catch (SQLException e) {
+
+			e.printStackTrace();
+		}
+		stmt.setString(1, reviewer);
+		stmt.setString(2, publisher.getEmail());
+		r = stmt.executeQuery();
+
+		return r;
+
+	}
+
+	public ResultSet search_reviewer(String searchid) throws SQLException {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("SELECT * from User WHERE email=? AND rol='R'");
+		stmt.setString(1, searchid);
+		r = stmt.executeQuery();
+		return r;
+	}
+
+	public ResultSet get_article(String id, Author a) throws SQLException {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("SELECT * from Article WHERE idArticle=? AND idAuthor=?");
+		stmt.setInt(1, Integer.parseInt(id));
+		stmt.setString(2, a.getEmail());
+		r = stmt.executeQuery();
+
+		return r;
+	}
+
+	public void set_articleTag(int id, int tag) {
+		PreparedStatement stmt = null;
+		try {
+			stmt = conn
+					.prepareStatement("INSERT INTO ArticleTag (idArticle, idTag) VALUES (?,?);");
+			stmt.setInt(1, id);
+			stmt.setInt(2, tag);
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public int getTagId(String tag) {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+		int tagId = -1;
+		try {
+			stmt = conn.prepareStatement("SELECT * from Tag WHERE issue=?");
+			stmt.setString(1, tag);
+			r = stmt.executeQuery();
+
+			if (r.next())
+				tagId = r.getInt("idTag");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return tagId;
+	}
+
+	public ResultSet getArticleID(Article art) {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+
+		try {
+			stmt = conn
+					.prepareStatement("SELECT * from Article WHERE title=? AND idAuthor=?");
+			stmt.setString(1, art.getTitle());
+			stmt.setString(2, art.getId_author());
+			r = stmt.executeQuery();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return r;
+	}
+
+	/**
+	 * @author roske
+	 * @desc Sets the comment of an ArticleReview
+	 * @param idArticle
+	 *            (int)
+	 * @param mail
+	 *            (string)
+	 * @param comment
+	 *            (string)
+	 * @return 1:success
+	 * @throws SQLException
+	 */
+	public int set_ar_comment(int idArticle, String reviewer_mail,
+			String comment) throws SQLException {
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("UPDATE ArticleReview SET comment=? WHERE idArticle=? AND reviewer_mail=?");
+		stmt.setString(1, comment);
+		stmt.setInt(2, idArticle);
+		stmt.setString(3, reviewer_mail);
+		return stmt.executeUpdate();
+
+	}
+
+	/**
+	 * @author roske
+	 * @desc Sets the mark of an ArticleReview
+	 * @param idArticle
+	 *            (int)
+	 * @param reviewer_mail
+	 *            (string)
+	 * @param mark
+	 *            (int)
+	 * @return 1:success
+	 * @throws SQLException
+	 */
+	public int set_ar_Mark(int idArticle, String reviewer_mail, int mark)
+			throws SQLException {
+		PreparedStatement stmt = null;
+		stmt = conn
+				.prepareStatement("UPDATE ArticleReview SET mark=? WHERE idArticle=? AND reviewer_mail=?");
+		stmt.setInt(1, mark);
+		stmt.setInt(2, idArticle);
+		stmt.setString(3, reviewer_mail);
+		return stmt.executeUpdate();
+	}
+	
+	public int addKarmaAuthor(String author_mail, int karma) throws SQLException {
+		ResultSet r = null;
+		PreparedStatement stmt = null;
+
+		try {
+			stmt = conn.prepareStatement("SELECT karma from Author WHERE email=?");
+			stmt.setString(1, author_mail);
+			r = stmt.executeQuery();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		r.next();
+		int k=r.getInt("karma") + karma;
+		
+		PreparedStatement stmt2 = null;
+		stmt2 = conn.prepareStatement("UPDATE Author SET karma=? WHERE email=?");
+		stmt2.setInt(1, k);
+		stmt2.setString(2, author_mail);
+		return stmt2.executeUpdate();
+	}
+	
+	public int addKarmaReviewer(String reviewer_mail)
+			throws SQLException {
+		PreparedStatement stmt = null;
+		stmt = conn.prepareStatement("UPDATE Reviewer SET karma=? WHERE email=?");
+		stmt.setInt(1, getKarmaOfReviewer(reviewer_mail)+1);
+		stmt.setString(2, reviewer_mail);
+		return stmt.executeUpdate();
+	}
+
+	public void createNewUserAuthor(User u) throws SQLException {
+		PreparedStatement stmtU = null;
+		PreparedStatement stmt = null;
+		stmtU = conn.prepareStatement("INSERT INTO User (email, name, second_name, birth_date, city, pass, rol) " +
+				"VALUES (?, ?, ?, ?, ?, ?, ?)");
+		stmtU.setString(1, u.getEmail());
+		stmtU.setString(2, u.getName());
+		stmtU.setString(3, u.getSecondName());
+		stmtU.setString(4, u.getBirthDate());
+		stmtU.setString(5, u.getCity());
+		stmtU.setString(6, u.getPassword());
+		stmtU.setString(7, u.getRol());
+		stmtU.executeUpdate();
+
+		stmt = conn.prepareStatement("INSERT INTO Author(email, karma) values (?, ?)");
+		stmt.setString(1, u.getEmail());
+		stmt.setInt(2, 0);
+		stmt.executeUpdate();		
+		 
+	}	
+}

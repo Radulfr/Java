@@ -1,0 +1,61 @@
+package SocialNetwork.actions;
+
+import java.util.Map;
+
+import Dominion.User;
+
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+
+public class Register extends ActionSupport{
+	
+	protected String email;
+	protected String name;
+	protected String second_name;
+	protected String city;
+	protected String birth_date;
+	protected String password1;
+	
+	public String execute() {
+		try {
+			User u = new User(this.email, this.password1, this.name, this.second_name,
+							this.city, this.birth_date);
+			u.setRol("A");
+			u.create_user_author();
+			Map<String, Object> session = ActionContext.getContext().getSession();  // Get session
+			session.put("loggedin", true);
+			session.put("role", 1);
+			session.put("user", u);
+			return SUCCESS; 
+		}
+		catch (Exception e) {
+			return ERROR;
+		}
+	}
+	
+	private static final long serialVersionUID = 1L;
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setSecond_name(String second_name) {
+		this.second_name = second_name;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public void setBirth_date(String birth_date) {
+		this.birth_date = birth_date;
+	}
+
+	public void setPassword1(String password) {
+		this.password1 = password;
+	}
+	
+}

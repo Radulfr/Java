@@ -1,0 +1,174 @@
+package Dominion;
+
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import Persistence.ArticleReviewDAO;
+import Persistence.AuthorDAO;
+import Persistence.CrudDAO;
+import Persistence.PublisherDAO;
+import Persistence.PublisherReviewerDAO;
+import Persistence.ReviewerDAO;
+
+
+public class Publisher extends User {
+	
+	protected String journal;
+	protected String web; 
+
+	public Publisher(String email, String password, String name, String sname, String city, String bdate, String journal, String web) {
+		super(email, password, name, sname, city, bdate);
+		this.journal=journal;
+		this.web=web;
+	}
+	
+	public Publisher(User u) throws SQLException{
+	//	super(u.getEmail());
+		CrudDAO<Publisher> c = new PublisherDAO();
+		setEmail(u.getEmail()); 
+		Publisher p=null;
+		try {
+			p = c.read(this);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		setJournal(p.getJournal()); 
+		setWeb(p.getWeb()); 
+	}
+	public Publisher(String email) {
+//		super(email);
+		CrudDAO<Publisher> c = new PublisherDAO();
+		setEmail(email); 
+		Publisher p=null;
+		try {
+			p = c.read(this);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		setJournal(p.getJournal()); 
+		setWeb(p.getWeb()); 
+	}
+	
+	public Publisher(){
+		
+	}
+	
+	
+	//SETS
+	
+	public void setJournal(String j){
+		journal=j;
+	}
+	
+	public void setWeb(String w){
+		web=w;
+	}
+	
+	
+	
+	//GETS
+	
+	public String getJournal(){
+		return journal;
+	}
+	
+	public String getWeb(){
+		return web;
+	}
+	
+	/**
+	 * @desc Returns a list of reviewers
+	 * @return LinkedList<String>
+	 * @throws SQLException 
+	 */
+	public LinkedList<PublisherReviewer> get_Reviewer_list() throws SQLException{
+
+		PublisherReviewer pr = new PublisherReviewer();
+		pr.setPublisher_mail(this.getEmail());
+		CrudDAO<PublisherReviewer> c = new PublisherReviewerDAO();
+		LinkedList<PublisherReviewer> l= c.readAll(pr);
+		return l;
+		
+	}
+
+	/**
+	 * @desc Adds a reviewer to the reviewer list
+	 * @param email (String)
+	 * @throws SQLException
+	 */
+	public void add_reviewer(String email) throws SQLException{
+		
+		CrudDAO<PublisherReviewer> c = new PublisherReviewerDAO();
+		c.create(new PublisherReviewer(this.email,email));
+	}
+	
+	/**
+	 * @desc Deletes a reviewer from the reviewer list
+	 * @param mail (String)
+	 * @throws SQLException
+	 */
+	public void delete_reviewer(String mail) throws SQLException{
+		CrudDAO<PublisherReviewer> c = new PublisherReviewerDAO();
+		c.delete(new PublisherReviewer(this.email,mail));
+	}
+	
+	public LinkedList<ArticleReview> get_review(String reviewer) throws SQLException{
+
+		CrudDAO<ArticleReview> ardao = new ArticleReviewDAO(); 
+		ArticleReview ar = new ArticleReview(); 
+		ar.setReviewer_mail(reviewer);
+		ar.setMark(-1); 
+		ar.setState_review("reviewed");
+		LinkedList<ArticleReview> revlist = ardao.readAll(ar); 
+
+		return revlist;
+	}
+	
+	/**
+	 * @desc Finds a reviewer by its mail
+	 * @param mail (String)
+	 * @return Reviewer
+	 * @throws SQLException 
+	 */
+	public Reviewer get_reviewer(String mail) throws SQLException{
+		
+		return new Reviewer(mail); 
+	}
+	
+	/**
+	 * @desc Finds all reviewers
+	 * @return ResultSet
+	 * @throws SQLException
+	 */
+	public LinkedList<Reviewer> get_reviewers() throws SQLException{
+		CrudDAO<Reviewer> c = new ReviewerDAO();
+		return c.readAll(new Reviewer());
+	}
+	
+	/**
+	 * @desc Adds a review to the ArticleReview
+	 * @param art_rev (ArticleReview)
+	 * @return 1: success
+	 * @throws SQLException
+	 */
+	public void send_review(ArticleReview art_rev) throws SQLException{
+		CrudDAO<ArticleReview> c = new ArticleReviewDAO();
+		c.create(art_rev);
+	}
+
+	
+	public Reviewer search_reviewer(String searchid) throws SQLException {
+		
+		return new Reviewer(searchid);
+
+	}
+	
+	@Override
+	public String toString(){
+		String s= getEmail()+": "+name+" "+second_name+", City: "+city+", Birth date:"+birth_date+", Rol:"+rol+", Password: "+password+", Journal: "+journal+", Web: "+web+"\n";
+		return s;
+	}
+
+}

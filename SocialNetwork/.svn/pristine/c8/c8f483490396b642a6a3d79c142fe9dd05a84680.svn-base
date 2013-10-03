@@ -1,0 +1,185 @@
+package test_package;
+
+import junit.framework.Assert;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import Dominion.User;
+import Persistence.Agent;
+
+public class TestLogin {
+	
+	private User us;
+	
+    @BeforeClass  
+    public static void setUpClass() throws Exception {
+    	System.out.println("Ejecutando TestLogin...");
+    	try{
+    		Agent ag = Agent.getDbCon();
+    		String sql_1 = "INSERT INTO User (email, name, second_name, birth_date, city, pass, rol) " +
+    				"VALUES ('johnDoe@autor.com', 'Aut1', 'num1', '1985-09-09', 'La Solana', 'johnDoe', 'A')";
+    		ag.insert(sql_1);
+    		String sql_2 = "INSERT INTO Author (email, karma) values ('johnDoe@autor.com', '7')";
+    		ag.insert(sql_2);
+    		String sql_3 = "INSERT INTO User (email, name, second_name, birth_date, city, pass, rol) " +
+    				"VALUES ('janeDoe@revisor.com', 'Revi2', 'num2', '1985-04-04', 'La Solana', 'janeDoe', 'R')";
+    		ag.insert(sql_3);
+    		String sql_4 = "INSERT INTO Reviewer (email, karma,VIP) values ('janeDoe@revisor.com', '5','0')";
+    		ag.insert(sql_4);
+    		String sql_5 = "INSERT INTO User (email, name, second_name, birth_date, city, pass, rol) " +
+    				"VALUES ('johnSmith@Publisher.com', 'edit1', 'num1', '1985-01-01', 'La Solana', 'johnSmith', 'E')";
+    		ag.insert(sql_5);
+    		String sql_6 = "INSERT INTO Publisher (email, journal, web) values ('johnSmith@Publisher.com', 'revista1', 'http://revista1.com')";
+    		ag.insert(sql_6);
+    	}catch(Exception e){
+    		Assert.fail(e.toString());
+    	}
+    }  
+      
+    @AfterClass  
+    public static void tearDownClass() throws Exception {  
+    	try{
+    		Agent ag = Agent.getDbCon();
+    		String sql_1 = "DELETE FROM User WHERE email='johnDoe@autor.com'";
+    		ag.insert(sql_1);
+    		String sql_2 = "DELETE FROM User WHERE email='janeDoe@revisor.com'";
+    		ag.insert(sql_2);
+    		String sql_3 = "DELETE FROM User WHERE email='johnSmith@Publisher.com'";
+    		ag.insert(sql_3);
+    	}catch(Exception e){
+    		Assert.fail(e.toString());
+    	}
+    	System.out.println("Fin TestLogin");
+    }  
+      
+    @Before  
+    public void setUp() {
+    	this.us = new User();
+    }
+      
+    @After  
+    public void tearDown(){
+    	this.us = null;
+    }  
+      
+    @Test  
+    public void loginAutor(){
+    	System.out.println("\tTest loginAutor...");
+		try {
+			String mail = "johnDoe@autor.com";
+			String pass = "johnDoe";
+			this.us = this.us.log(mail, pass);
+			Assert.assertNotNull(this.us);
+		} catch (Exception e) {
+			Assert.fail(e.toString());
+		}
+    }
+    
+    @Test  
+    public void notLoginAutor(){
+    	System.out.println("\tTest notLoginAutor...");
+		try {
+			String mail = "johnDoe@autor.com";
+			String pass = "any";
+			this.us = this.us.log(mail, pass);
+			Assert.assertNull(this.us);
+		} catch (Exception e) {
+			Assert.fail(e.toString());
+		}
+    }
+    
+    @Test  
+    public void loginRevisor(){
+    	System.out.println("\tTest loginRevisor...");
+		try {
+			String mail = "janeDoe@revisor.com";
+			String pass = "janeDoe";
+			this.us = this.us.log(mail, pass);
+			Assert.assertNotNull(this.us);
+		} catch (Exception e) {
+			Assert.fail(e.toString());
+		}
+    }
+    
+    @Test  
+    public void notLoginRevisor(){
+    	System.out.println("\tTest notLoginRevisor...");
+		try {
+			String mail = "janeDoe@revisor.com";
+			String pass = "000any";
+			this.us = this.us.log(mail, pass);
+			Assert.assertNull(this.us);
+		} catch (Exception e) {
+			Assert.fail(e.toString());
+		}
+    }
+    
+    @Test  
+    public void loginEditor(){
+    	System.out.println("\tTest loginEditor...");
+		try {
+			String mail = "johnSmith@Publisher.com";
+			String pass = "johnSmith";
+			this.us = this.us.log(mail, pass);
+			Assert.assertNotNull(this.us);
+		} catch (Exception e) {
+			Assert.fail(e.toString());
+		}
+    }
+    
+    @Test  
+    public void notLoginEditor(){
+    	System.out.println("\tTest notLoginEditor...");
+		try {
+			String mail = "johnSmith@Publisher.com";
+			String pass = "lastAny";
+			this.us = this.us.log(mail, pass);
+			Assert.assertNull(this.us);
+		} catch (Exception e) {
+			Assert.fail(e.toString());
+		}
+    }
+    
+    @Test
+    public void loginInCapitals(){
+    	System.out.println("\tTest loginInCapitals");
+    	try{
+    		String mail = "johnDoe@autor.com";
+    		String pass = "johnDoe";
+    		this.us = this.us.log(mail, pass.toUpperCase());
+    		Assert.assertNull(this.us);
+    	}catch(Exception e){
+    		Assert.fail("No se esperaba la exception");
+    	}
+    }
+    
+    @Test
+    public void loginInLowers(){
+    	System.out.println("\tTest loginInLowers");
+    	try{
+    		String mail = "janeDoe@revisor.com";
+    		String pass = "janeDoe";
+    		this.us = this.us.log(mail, pass.toLowerCase());
+    		Assert.assertNull(this.us);
+    	}catch(Exception e){
+    		Assert.fail(e.toString());
+    	}
+    }
+    
+    @Test  
+    public void loginNoPass(){
+    	System.out.println("\tTest loginNoPass...");
+		try {
+			String mail = "johnDoe@autor.com";
+			String pass = "";
+			this.us = this.us.log(mail, pass);
+			Assert.assertNull(this.us);
+		} catch (Exception e) {
+			Assert.fail(e.toString());
+		}
+    }
+}

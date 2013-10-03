@@ -1,0 +1,37 @@
+package Persistence;
+
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import utilidades.leer;
+import Dominion.Article;
+import Dominion.Message;
+
+public class PruebasDAORRC {
+	public static void main (String[] args) throws SQLException{
+
+		CrudDAO<Article> c = new ArticleDAO();
+		Article a = new Article();
+		a.setBody("PRUEBABODY");
+		a.setComment_author("PRUE"); 
+		a.setId_author("1@autor.com"); 
+		LinkedList<Article> l = new LinkedList<Article>(); 
+		
+	//	c.create(a);
+		
+	//	a = c.read(a); 
+	//	System.out.println("Done create + read " + a.toString()); 
+		
+
+		
+	//	a.setBody("RENAMED");
+	//	c.update(a); 
+		a.setId_author(null);
+		a.setState(null); 
+		l = c.readAll(a); 
+		System.out.println("Done update + read " + l.toString()); 
+		
+		//c.delete(a); 
+		//System.out.print("Deleted"); 
+	}
+}

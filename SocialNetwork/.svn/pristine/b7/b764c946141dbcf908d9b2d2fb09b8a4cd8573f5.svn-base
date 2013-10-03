@@ -1,0 +1,90 @@
+body { 
+	font:8pt verdana; 
+	background:#CCCCCC; 
+
+}
+
+h2 {
+
+	font:28pt verdana, arial, sans-serif;
+	color:#6666FF;
+	margin:0;
+	padding:10px;
+}
+
+h1 {
+
+	font:14pt verdana, arial, sans-serif;
+	color:#164677;
+	padding:10px;
+	margin:0;
+
+
+}
+h3
+{
+	font:10pt verdana, arial, sans-serif;
+	color:#164677;
+	padding:10px;
+	margin:0;
+	margin-left:0;
+}
+h4
+{
+	font:10pt verdana, arial, sans-serif;
+	color:#000000;
+	padding:5px;
+	margin:0;
+	font-weight: bold;
+	
+}
+h5
+{
+	font:8pt verdana, arial, sans-serif;
+	color:#666;
+	padding:4px;
+	
+}
+
+a:link, a:visited, a:active {
+
+color:#164677;
+font:bold 8pt verdana, arial, sans-serif;
+text-decoration:none;
+
+}
+
+
+
+a:hover {
+
+	color:#aaee77;
+	font:bold 8pt verdana, arial, sans-serif;
+	text-decoration:underline;
+}
+
+
+p { 
+	font: 8pt verdana, arial, sans-serif; 
+	margin: 0px; 
+	
+}
+
+ul li
+{
+	color:#164677;
+	font-weight:bold;
+}
+table
+{	
+	border:1; 
+	color:#010101;
+}
+
+
+.Grid
+{
+	text-align:center;
+	min-width:450px;
+}
+

@@ -1,0 +1,64 @@
+package SocialNetwork.actions;
+
+import java.util.Map;
+
+import Dominion.User;
+import Persistence.CrudDAO;
+import Persistence.UserDAO;
+
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+
+public class Buscar extends ActionSupport{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private String name;
+	private String userfound="nothing"; 
+	private String userid=" "; 
+	private boolean found=true; 
+	
+	public String execute() {
+		User u = new User();
+		User aux=null; 
+		try {
+			Map<String, Object> session = ActionContext.getContext().getSession();  // Get session
+			u = (User) session.get("user");
+			
+			aux = u.search_userById(this.name);
+
+			
+			if(aux!=null){
+				userfound="["+aux.getEmail() + "] " + aux.getName() + " " + aux.getSecond_name() + " [" + aux.getRol()+"]" ;
+				userid = aux.getEmail();
+				
+			}
+			else
+				found=false; 
+					
+			session.put("userfound", userfound);
+			session.put("userid", userid);
+
+			return SUCCESS; 
+		}
+		catch (Exception e) {
+			return ERROR;
+		}
+	}
+
+
+	public void setName(String name){
+		this.name=name; 
+	}
+	public String getUserfound(){
+		return this.userfound; 
+	}
+	public String getUserid(){
+		return this.userid; 
+	}
+	public boolean getFound(){
+		return this.found;
+	}
+
+}

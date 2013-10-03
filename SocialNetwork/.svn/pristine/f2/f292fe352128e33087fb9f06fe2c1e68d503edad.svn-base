@@ -1,0 +1,114 @@
+body { 
+	font:8pt verdana; 
+	background:#CCCCCC; 
+	body:80%;
+	padding-left:10%;
+	padding-right:10%;
+
+}
+
+h1, h2, h3 {
+	margin: 0;
+	padding: 0;
+	text-transform: uppercase;
+	font-family: 'Archivo Narrow', sans-serif;
+	font-weight: normal;
+	font-weight: 200;
+	color: #222222;
+}
+
+h1 {
+	font-size: 2em;
+}
+
+h2 {
+	font-size: 2.8em;
+}
+
+h3 {
+	font-size: 1.6em;
+}
+h4
+{
+	font-size: 1.2em;
+}
+h5
+{
+	
+	font-size: 1em;
+}
+hr {border: 0; border-top: 1px solid #999; border-bottom: 1px solid #333; height:0;}
+
+a:link, a:visited, a:active {
+
+color:#164677;
+font:bold 8pt verdana, arial, sans-serif;
+text-decoration:none;
+
+}
+
+
+
+a:hover {
+
+	color:#aaee77;
+	font:bold 8pt verdana, arial, sans-serif;
+	text-decoration:underline;
+}
+
+
+p { 
+	font: 8pt verdana, arial, sans-serif; 
+	margin: 0px; 
+	
+}
+
+ul li
+{
+	color:#164677;
+}
+table {
+  border-collapse: collapse;
+  border: 1px solid #666666;
+  font: normal 11px verdana, arial, helvetica, sans-serif;
+  color: #363636;
+  background: #f6f6f6;
+  text-align:left;
+  }
+caption {
+  text-align: center;
+  font: bold 16px arial, helvetica, sans-serif;
+  background: transparent;
+  padding:6px 4px 8px 0px;
+  color: #CC00FF;
+  text-transform: uppercase;
+}
+thead, tfoot {
+background:url(bg1.png) repeat-x;
+text-align:left;
+height:30px;
+}
+thead th, tfoot th {
+padding:5px;
+}
+table a {
+color: #333333;
+text-decoration:none;
+}
+table a:hover {
+text-decoration:underline;
+}
+tr.odd {
+background: #f1f1f1;
+}
+tbody th, tbody td {
+padding:5px;
+}
+
+
+.Grid
+{
+	text-align:center;
+	min-width:450px;
+}
+

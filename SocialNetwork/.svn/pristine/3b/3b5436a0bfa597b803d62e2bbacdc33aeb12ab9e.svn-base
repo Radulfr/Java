@@ -1,0 +1,199 @@
+package Dominion;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import Persistence.Agent;
+import Persistence.AgentFactory;
+
+public class Publisher extends User {
+	
+	protected String journal;
+	protected String web; 
+
+	public Publisher(String email, String password, String name, String sname, String city, String bdate, String journal, String web) {
+		super(email, password, name, sname, city, bdate);
+		this.journal=journal;
+		this.web=web;
+	}
+	
+	public Publisher(User u){
+		super(u.getEmail(),u.getPassword(),u.getName(),u.getSecondName(),u.getCity(),u.getBirthDate());
+		this.journal = "";
+		this.web = "";
+	}
+	
+	public Publisher(){
+		
+	}
+	
+	
+	//SETS
+	
+	public void setJournal(String j){
+		journal=j;
+	}
+	
+	public void setWeb(String w){
+		web=w;
+	}
+	
+	
+	
+	//GETS
+	
+	public String getJournal(){
+		return journal;
+	}
+	
+	public String getWeb(){
+		return web;
+	}
+	
+	/**
+	 * @author roske
+	 * @desc Returns a list of reviewers
+	 * @return LinkedList<String>
+	 * @throws SQLException 
+	 */
+	public LinkedList<String> get_Reviewer_list() throws SQLException{
+		ResultSet r = null; 
+		LinkedList<String> l = new LinkedList<String>(); 
+		
+		AgentFactory age = Agent.getDbCon();
+		
+		r = age.get_reviewers(this); 
+		
+		while(r.next()){
+			l.add(r.getString("reviewer_mail")); 
+		}
+		
+		return l;
+		
+	}
+
+	/**
+	 * @author roske
+	 * @desc Adds a reviewer to the reviewer list
+	 * @param email (String)
+	 * @throws SQLException
+	 */
+	public void add_reviewer(String email) throws SQLException{
+		AgentFactory age = Agent.getDbCon();
+		switch(age.add_publisher_reviewer(this, email)){
+		case(1):
+			System.out.println("\n'" + email + "' has been added to your reviewers list");
+		break;
+		case(0):
+			System.out.println("\nThe reviwer does not exist");
+		break;
+		default:
+			System.out.println("\nError while adding '" + email + "' to the reviwers list of '" + this.email + "'");
+		}
+	}
+	
+	/**
+	 * @author roske
+	 * @desc Deletes a reviewer from the reviewer list
+	 * @param mail (String)
+	 * @throws SQLException
+	 */
+	public void delete_reviewer(String mail) throws SQLException{
+		AgentFactory age = Agent.getDbCon();
+		switch(age.delete_publisher_reviewer(this, mail)){
+		case(1):
+			System.out.println("\n'" + email + "' has been deleted from your reviewers list");
+		break;
+		case(0):
+			System.out.println("\nThe reviewer does not exist");
+		break;
+		default:
+			System.out.println("\nError while deleteing '" + email + "' from the reviwers list of '" + this.email + "'");
+		}
+	}
+	public LinkedList<ArticleReview> get_review(String reviewer) throws SQLException{
+		AgentFactory age = Agent.getDbCon();
+		ResultSet r;
+		ArticleReview aux; 
+		LinkedList<ArticleReview> revlist = new LinkedList<ArticleReview>();
+		r=age.getReviewsFromReviewer(reviewer,this); 
+		while(r.next()){
+			aux = new ArticleReview();
+			aux.setIdArticle(r.getInt("IdArticle"));
+			aux.setComment(r.getString("comment"));
+			aux.setReview_date(r.getString("review_date"));
+			aux.setReviewer_mail(r.getString("reviewer_mail"));
+			aux.setMark(r.getInt("mark"));
+			aux.setState_review(r.getString("state_review"));
+			revlist.add(aux);
+		}
+		return revlist;
+	}
+	
+	/**
+	 * @author roske
+	 * @desc Finds a reviewer by its mail
+	 * @param mail (String)
+	 * @return Reviewer
+	 * @throws SQLException 
+	 */
+	public Reviewer get_reviewer(String mail) throws SQLException{
+		AgentFactory age = Agent.getDbCon();
+		ResultSet r = age.get_reviewer_by_mail(mail);
+		Reviewer rev = new Reviewer();
+		
+		if (r != null){
+			r.next();
+			rev.setEmail(r.getString("email"));
+			rev.setName(r.getString("name"));
+			rev.setSecondName(r.getString("second_name")); 
+			rev.setCity(r.getString("city"));
+		}
+		else{
+			rev = null;
+		}
+		
+		return rev; 
+	}
+	
+	/**
+	 * @author roske
+	 * @desc Finds all reviewers
+	 * @return ResultSet
+	 * @throws SQLException
+	 */
+	public ResultSet get_reviewers() throws SQLException{
+		AgentFactory age = Agent.getDbCon();
+		return age.get_reviewer_by_mail("");
+	}
+	
+	/**
+	 * @author roske
+	 * @desc Adds a review to the ArticleReview
+	 * @param art_rev (ArticleReview)
+	 * @return 1: success
+	 * @throws SQLException
+	 */
+	public int send_review(ArticleReview art_rev) throws SQLException{
+		AgentFactory age = Agent.getDbCon();
+		return age.add_article_review(art_rev);
+	}
+
+	public User search_reviewer(String searchid) throws SQLException {
+		User nuser = new User(); 
+		ResultSet r = null; 
+		AgentFactory ag = Agent.getDbCon();
+		r = ag.search_reviewer(searchid);
+		if (r.next() != false){ 
+			nuser.setEmail(r.getString("email"));
+						
+		}
+		else{
+			//System.out.println("No existe usuario");
+		}
+		return nuser;
+
+	}
+
+}

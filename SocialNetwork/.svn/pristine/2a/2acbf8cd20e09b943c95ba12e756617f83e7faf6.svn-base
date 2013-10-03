@@ -1,0 +1,155 @@
+package Dominion;
+
+import java.sql.SQLException;
+
+import java.util.LinkedList;
+
+import utilidades.leer;
+
+import Persistence.ArticleDAO;
+import Persistence.ArticleReviewDAO;
+import Persistence.AuthorDAO;
+import Persistence.CrudDAO;
+import Persistence.ReviewerDAO;
+
+public class Reviewer extends User {
+	
+	protected int karma;
+	protected int VIP;  //TODO para borrar
+	
+	
+	public Reviewer(String email, String password, String name, String sname, String city, String bdate, int karma,int VIP){
+		super(email, password, name, sname, city, bdate);
+		this.karma=karma;
+		this.VIP=VIP;
+
+	}
+	
+	public Reviewer(User u) throws SQLException{
+		//super(u.getEmail(),u.getPassword(),u.getName(),u.getSecond_name(),u.getCity(),u.getBirth_date());
+		CrudDAO<Reviewer> c = new ReviewerDAO();
+		setEmail(u.getEmail()); 
+		Reviewer r = c.read(this);
+		this.karma=r.getKarma();
+		this.VIP=r.getVIP();		
+	}
+	
+	public Reviewer(String email) throws SQLException{
+		//super(email);
+		CrudDAO<Reviewer> c = new ReviewerDAO();
+		setEmail(email); 
+		Reviewer r=c.read(this);
+		this.karma=r.getKarma();
+		this.VIP=r.getVIP();
+	}
+	
+	public Reviewer(){
+		super();
+	}
+	
+	
+	//SETS
+	public void setKarma(int k){
+		karma=karma+k;
+	}
+	public void setKarmaNoAdition(int k){
+		karma = k; 
+	}
+	public void setVIP(int v){
+		VIP=v;
+	}
+	
+	//GETS
+	public int getKarma(){
+		return karma;
+	}
+	public int getVIP(){
+		return VIP;
+	}
+	
+	
+	public LinkedList<ArticleReview> get_unresolved_reviews()throws SQLException{
+		/*
+		 * Muestra la lista de Articles del
+		 * revisor con estado unresolved
+		 */
+		ArticleReview artrev = new ArticleReview ();
+		artrev.setReviewer_mail(this.email);
+		artrev.setState_review("unresolved");
+		CrudDAO<ArticleReview> c = new ArticleReviewDAO();
+		LinkedList<ArticleReview> l = c.readAll(artrev);
+		
+		return l;
+		
+	}
+	public LinkedList<ArticleReview> get_resolved_reviews()throws SQLException{
+		/*
+		 * Muestra la lista de Articles del
+		 * revisor con estado resolved
+		 */
+		ArticleReview artrev = new ArticleReview ();
+		artrev.setReviewer_mail(this.email);
+		artrev.setState_review("reviewed");
+		CrudDAO<ArticleReview> c = new ArticleReviewDAO();
+		LinkedList<ArticleReview> l = c.readAll(artrev);
+		
+		return l;
+		
+	}
+	
+	public boolean asses_publication(Article a,  int nota)throws SQLException{
+		//Suponiendo que el articulo a corresponde a la evaluacion del revisor this.
+		/*
+		 * Seteamos el origen del mensaje y lo pasamos
+		 * al agente
+		 */
+		String state = a.getState();
+		boolean puedo=false;
+		ArticleReview artrev = new ArticleReview(a.getId(), this.email);
+		if (!artrev.getState_review().equalsIgnoreCase("reviewed")){
+			puedo=true;
+			if(state.equals("sent"))
+				state="halfreviewed";
+			else if(state.equals("halfreviewed"))
+				state="reviewed";
+			else{ //if reviewed
+				Notification not = new Notification(a.getId_author(), "ARTICLE REVIEWED", "UNREAD", leer.fecha()); 
+				not.send();
+			}
+			
+			artrev.setState_review("reviewed");
+			artrev.setMark(nota);
+			CrudDAO<ArticleReview> c = new ArticleReviewDAO();
+			c.update(artrev);
+			
+			a.setMark();  //se realiza una media entre todos los ArticleReview de ese artículo
+			CrudDAO<Article> c2 = new ArticleDAO();
+			c2.update(a);
+			
+			this.setKarma(1);
+			CrudDAO<Reviewer> c3 = new ReviewerDAO();
+			c3.update(this);
+			
+			Author aut = new Author(a.getId_author());
+			CrudDAO<Author> c4 = new AuthorDAO();
+			aut.setKarma(nota);
+			c4.update(aut);
+			
+		}		
+		return puedo;
+	}
+	
+	
+	public void leave_comment(Article a,String comment)throws SQLException{
+		//Hace un comentario. 
+		CrudDAO<ArticleReview> c = new ArticleReviewDAO();
+		ArticleReview artrev= new ArticleReview(a.getId(), this.email);
+		artrev=c.read(artrev); 
+		artrev.setComment(comment);
+		
+		c.update(artrev);
+	}
+	
+
+
+}

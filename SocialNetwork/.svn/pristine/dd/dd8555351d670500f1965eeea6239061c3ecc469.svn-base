@@ -1,0 +1,15 @@
+package Persistence;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import Dominion.Article;
+
+public interface SistemaDAO {
+	public int getKarmaOfReviewer (String idReviewer)throws SQLException;
+	public ResultSet search_Reviewer_byTag (Article art) throws SQLException;
+	public int getKarmaOfAuthor (String idAuthor)throws SQLException;
+	public int add_ArticleReviewer(int idArticle, String idReviewer, String date) throws SQLException;
+	public int setAvMarkOfPublication(int idArticle)throws SQLException;
+	
+}

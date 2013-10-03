@@ -1,0 +1,95 @@
+package Persistence;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import utilidades.leer;
+import Dominion.Message;
+
+public class MessageDAO extends CrudDAO<Message> {
+
+	@Override
+	public Message read(Message m) throws SQLException {
+		ResultSet rs = AgenteBD.getDbCon().query("SELECT * FROM Message WHERE idMessage='" + m.getId() + "'");
+		 if (rs != null) {
+	            try {
+	                while (rs.next()) {
+						m.setBody(rs.getString("body"));
+						m.setDate(rs.getString("send_date"));
+						m.setEmail_from(rs.getString("mail_from"));
+						m.setEmail_to(rs.getString("mail_to"));
+	                }
+	            } catch (SQLException e) {
+	                e.printStackTrace();
+            }
+        }
+		rs.close();
+		return m;
+	}
+
+	// corresponde a send_message
+	@Override
+	public void create(Message m) throws SQLException {
+		String sqlQuerry = "INSERT INTO Message (mail_from, mail_to, body, send_date) VALUES ('"
+							+ m.getEmail_from() + "','"
+							+ m.getEmail_to() + "','"
+							+ m.getBody() + "','"
+							+ leer.fecha() + "')";
+							
+		try {
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	   @Override
+	    public void update(Message m) {
+		   String sqlQuerry = "UPDATE Message SET mail_from='" + m.getEmail_from() + "',"
+					+ "mail_to='" + m.getEmail_to() + "', body='" + m.getBody() + "',"
+					+ "send_date='" + m.getDate() + "' WHERE idMessage=" + m.getId() + "";
+			try {
+				AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}       
+	    }
+	   
+
+	@Override
+	public void delete(Message m) throws SQLException {
+		   try {
+	 			AgenteBD.getDbCon().queryUpdate("DELETE FROM Message WHERE idMessage=" + m.getId() + "");
+	 		} catch (SQLException e) {
+	 			e.printStackTrace();
+	 		}
+	    }
+
+	
+	//lee todo los mensajes mandados. Corresponde a get_user_messages
+	@Override
+	public LinkedList<Message> readAll(Message msg) throws SQLException {
+		ResultSet rs = AgenteBD.getDbCon().query("SELECT * from Message WHERE mail_to='"+msg.getEmail_to()+"'");
+    	
+    	LinkedList<Message> listArtRev = new LinkedList<Message>();
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                	Message m = new Message();
+                    m.setId(rs.getInt("idMessage"));
+                    m.setBody(rs.getString("body"));
+        			m.setDate(rs.getString("send_date"));
+        			m.setEmail_from(rs.getString("mail_from"));
+        			m.setEmail_to(rs.getString("mail_to"));
+                    listArtRev.add(m);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        return listArtRev;
+	}
+
+}

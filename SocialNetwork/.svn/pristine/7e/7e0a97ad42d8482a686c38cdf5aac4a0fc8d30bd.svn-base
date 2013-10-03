@@ -1,0 +1,75 @@
+package Persistence;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import Dominion.*;
+
+public class FollowsDAO extends CrudDAO<Follows>{
+
+    @Override
+    public void create(Follows f) {
+        String sqlQuerry = "INSERT INTO Follows VALUES ('"+f.getFollower_mail()+"','"+f.getFollowed_mail()+"')";
+        try {
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    }
+
+    @Override
+    public void delete(Follows f) {
+    	 try {
+ 			AgenteBD.getDbCon().queryUpdate("DELETE FROM Follows WHERE follower_mail='"+f.getFollower_mail()+"' AND followed_mail='"+f.getFollowed_mail()+"'");
+ 		} catch (SQLException e) {
+ 			e.printStackTrace();
+ 		}
+    }
+
+    
+    @Override
+    public Follows read(Follows f) throws SQLException {
+      ResultSet rs = AgenteBD.getDbCon().query("SELECT * FROM Follows WHERE follower_mail='"+f.getFollower_mail()+"' AND followed_mail='"+f.getFollowed_mail()+"'");
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                    f.setFollowed_mail(rs.getString("followed_mail"));
+                    f.setFollower_mail(rs.getString("follower_mail"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        return f;
+    }
+
+  
+    @Override
+    public void update(Follows f) {
+    	//No se puede actualizar un seguidor. O se crea o se borra
+    }
+
+
+    @Override
+    public LinkedList<Follows> readAll(Follows t)throws SQLException{
+    	ResultSet rs = AgenteBD.getDbCon().query("SELECT * FROM Follows WHERE follower_mail='"+t.getFollower_mail()+"'");
+    	
+    	LinkedList<Follows> listFol = new LinkedList<Follows>();
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                	Follows f = new Follows();
+                    f.setFollowed_mail(rs.getString("followed_mail"));
+                    f.setFollower_mail(rs.getString("follower_mail"));
+                    listFol.add(f);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        return listFol;
+    }
+}

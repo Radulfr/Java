@@ -1,0 +1,51 @@
+package Persistence;
+
+import java.util.LinkedList;
+
+import Dominion.Article;
+import Dominion.Reviewer;
+
+public class NoPersistence {
+
+	/**
+	 * @param args
+	 * @throws Exception
+	 * @Reviewer Buggin' & Debuggin' 
+	 */
+	public static void main(String[] args) throws Exception {
+		
+		//Reviewer a= new Reviewer("Titul", "2012-09-12", "1@autor.com","tachinda", "send", 10);
+		
+		CrudDAO<Article> c = new ArticleDAO();
+		
+		//leyendo
+	//	Article articulo= new Article();
+		//articulo.setId(1);
+		//articulo=c.read(articulo);
+		
+//		// creando.
+//		Article articulo= new Article("TITULOGUAY", "2013-03-12","1@autor.com","COMENTARIO","S",5,"BODY");
+//		c.create(articulo);
+	
+		//actualizando
+//		Article articulo= new Article();
+//		articulo.setId(15); 
+//		articulo = c.read(articulo);
+//		articulo.setTitle("Mario");
+//		articulo.setBody("Mas grande");
+//		c.update(articulo);
+		
+		//borrando
+//		Reviewer articulo= new Reviewer("otro");
+//		c.delete(articulo);
+		
+		//leyendo todos
+//		Reviewer articulo= new Reviewer();
+//		articulo.setMail_notified("7@autor.com");
+//		LinkedList<Reviewer> l=c.readAll(articulo);
+//		System.out.println(l.toString());
+		
+//	System.out.println(articulo.toString());
+			
+	}
+}

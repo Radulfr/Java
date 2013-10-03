@@ -1,0 +1,74 @@
+package Persistence;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.LinkedList;
+
+import Dominion.*;
+
+public class ArticleTagDAO extends CrudDAO<ArticleTag>{
+
+    @Override
+    public void create(ArticleTag at) {
+        String sqlQuerry = "INSERT INTO ArticleTag VALUES ('"+at.getIdArticle()+"' , '"+at.getIdTag()+"')";
+        try {
+			AgenteBD.getDbCon().queryUpdate(sqlQuerry);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    }
+
+    @Override
+    public void delete(ArticleTag at) {
+    	 try {
+ 			AgenteBD.getDbCon().queryUpdate("DELETE FROM ArticleTag WHERE idTag='"+at.getIdTag()+"' AND idArticle='"+at.getIdArticle()+"'");
+ 		} catch (SQLException e) {
+ 			e.printStackTrace();
+ 		}
+    }
+
+    
+    @Override
+    public ArticleTag read(ArticleTag at) throws SQLException {
+    	ResultSet rs = AgenteBD.getDbCon().query("SELECT * FROM ArticleTag WHERE idArticle='"+at.getIdArticle()+"'");
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                    at.setIdTag(rs.getInt("idTag"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        return at;
+    }
+
+    
+    @Override
+    public void update(ArticleTag at) {
+    	//No se va a dar el caso. Solo se borraran y crearan nuevas
+    }
+
+
+    @Override
+    public LinkedList<ArticleTag> readAll(ArticleTag at)throws SQLException{
+    	ResultSet rs = AgenteBD.getDbCon().query("SELECT * FROM ArticleTag WHERE idTag='"+at.getIdTag()+"'");
+    	
+    	LinkedList<ArticleTag> listArtTag = new LinkedList<ArticleTag>();
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                	ArticleTag tg = new ArticleTag();
+                    tg.setIdTag(rs.getInt("idTag"));
+                    tg.setIdArticle(rs.getInt("IdArticle"));
+                    listArtTag.add(tg);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        rs.close();
+        return listArtTag;
+    }
+}

@@ -1,0 +1,68 @@
+package test_package;
+
+import junit.framework.Assert;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import Dominion.User;
+import Persistence.Agent;
+
+public class TestNewPassword {
+	
+	private User us;
+	
+    @BeforeClass  
+    public static void setUpClass() throws Exception {
+    	System.out.println("Ejecutando TestNewPassword...");
+    	try{
+    		Agent ag = Agent.getDbCon();
+    		String sql_1 = "INSERT INTO User (email, name, second_name, birth_date, city, pass, rol) " +
+    				"VALUES ('johnDoe@autor.com', 'Aut1', 'num1', '1985-09-09', 'La Solana', 'autor1', 'A')";
+    		ag.insert(sql_1);
+    		String sql_2 = "INSERT INTO Author (email, karma) values ('johnDoe@autor.com', '7')";
+    		ag.insert(sql_2);
+    	}catch(Exception e){
+    		Assert.fail(e.toString());
+    	}
+    }  
+      
+    @AfterClass  
+    public static void tearDownClass() throws Exception {  
+    	try{
+    		Agent ag = Agent.getDbCon();
+    		String sql_1 = "DELETE FROM User WHERE email='johnDoe@autor.com'";
+    		ag.insert(sql_1);
+    	}catch(Exception e){
+    		Assert.fail(e.toString());
+    	}
+    	System.out.println("Fin TestNewPassword");
+    }  
+      
+    @Before  
+    public void setUp() {
+    	this.us = new User();
+       	this.us.setEmail("johnDoe@autor.com");
+    }
+      
+    @After  
+    public void tearDown(){
+    	this.us = null;
+    }  
+      
+    @Test  
+    public void newPassword(){
+    	System.out.println("\tTest newPassword...");
+		try {
+			String newPass = "newPassword";
+			this.us.setPassword(newPass);
+			this.us.edit_profile(this.us);
+			Assert.assertEquals(newPass, this.us.getPassword());
+		} catch (Exception e) {
+			Assert.fail(e.toString());
+		}
+    }    
+}

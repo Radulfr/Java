@@ -1,0 +1,94 @@
+package SocialNetwork.actions;
+
+
+import java.util.Map;
+
+import Dominion.Article;
+import Dominion.ArticleTag;
+import Dominion.Author;
+import Dominion.Sistema;
+import Dominion.Tag;
+import Dominion.User;
+import Persistence.ArticleDAO;
+import Persistence.ArticleTagDAO;
+import Persistence.CrudDAO;
+import Persistence.TagDAO;
+
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+
+public class SendPublications extends ActionSupport{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+
+	private boolean checkvip;
+	private String publicationname;
+	private String comentarticle;
+	private String bodyarticle;
+	private String tag;
+	
+	public String execute() {
+		Author a;
+		User u; 
+		try {
+			Map<String, Object> session = ActionContext.getContext().getSession();  // Get session
+			CrudDAO<Article> c = new ArticleDAO(); 
+			CrudDAO<ArticleTag> d = new ArticleTagDAO(); 
+			CrudDAO<Tag> e = new TagDAO(); 
+			
+			ArticleTag t = new ArticleTag(); 
+			u =  (User) session.get("user"); 
+			a = new Author(u);
+
+			Tag ta = new Tag(); 
+			
+			Article Art = new Article();
+			Art.setTitle(publicationname);
+			Art.setComment_author(comentarticle);
+			Art.setBody(bodyarticle);
+			Art.setId_author(a.getEmail());
+			Art.setPublishing_date(utilidades.leer.fecha());
+			Art.setState("sent"); 
+			
+			ta.setIssue(tag); 
+			ta=e.read(ta); 
+			
+			c.create(Art);
+			t.setIdArticle(c.read(Art).getId());
+			t.setIdTag(ta.getIdTag());
+			d.create(t); 
+
+
+//			s.PublicationsToReviewer(Art); // TODO
+			return SUCCESS; 
+		}
+		catch (Exception e) {
+			return ERROR;
+		}
+	}
+
+	
+	public void setCheckvip(boolean checkvip){
+		System.out.println(checkvip);
+		 this.checkvip=checkvip; 
+	}
+
+	public void setPublicationname(String publicationname){
+		this.publicationname=publicationname;
+	}
+	
+	public void setComentarticle(String comentarticle){
+		this.comentarticle=comentarticle;
+	}
+	
+	public void setBodyarticle(String bodyarticle){
+		this.bodyarticle=bodyarticle;
+	}
+	
+	public void setTag(String tag){
+		this.tag = tag; 
+	}
+}

@@ -1,0 +1,25 @@
+package SocialNetwork.actions;
+
+import java.util.Map;
+
+import Dominion.User;
+
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+
+public class Logout extends ActionSupport{
+	private static final long serialVersionUID = 1L;
+	
+	public String execute() {
+		String R; 
+		try {
+			Map<String, Object> session = ActionContext.getContext().getSession();  // Get session
+			session.clear(); 
+		
+		}
+		catch (Exception e) {
+			return ERROR;
+		}
+		return SUCCESS;
+	}
+}
