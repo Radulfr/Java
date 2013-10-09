@@ -1,0 +1,13 @@
+<table border="1">
+	<tr>
+		<td>
+			<a href="index.jsp">Home</a>
+		</td>
+		<td>
+			<a href="index.jsp">Friends</a>
+		</td>
+		<td>
+			<a href="DMCombat.jsp" >Combat session </a>
+		</td>		
+	</tr>
+</table>
