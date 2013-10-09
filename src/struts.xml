@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+	"-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+	"http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+	<package name="default" namespace="/" extends="struts-default"> 
+		<action name="addfighter" class="AppActions.Fight" method="add">
+			<result name="success">DMCombat.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>
+		<action name="sort" class="AppActions.Fight" method="sort">
+			<result name="success">DMCombat.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>		
+		<action name="delete" class="AppActions.Fight" method="delete">
+			<result name="success">DMCombat.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>		
+		<action name="hit" class="AppActions.Fight" method="hit">
+			<result name="success">DMCombat.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>		
+		<action name="endcombat" class="AppActions.Fight" method="end">
+			<result name="success">DMCombat.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>	
+		<action name="up_player" class="AppActions.Fight" method="up_player">
+			<result name="success">DMCombat.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>		
+		<action name="down_player" class="AppActions.Fight" method="down_player">
+			<result name="success">DMCombat.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>			
+		<action name="register" class="AppActions.Register" >
+			<result name="success">Success.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>	
+		<action name="login" class="AppActions.Login" >
+			<result name="success">Main.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>	
+
+		<action name="throw" class="AppActions.Dices" method="diceThrow" >
+			<result name="success">Dices.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>		
+
+		<action name="addnote" class="AppActions.Notes">
+			<result name="success">Notes.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>	
+		<action name="clearnotelist" class="AppActions.Notes" method="clear">
+			<result name="success">Notes.jsp</result>
+			<result name="error">error.jsp</result>
+		</action>			
+			
+	</package>
+</struts>
+
